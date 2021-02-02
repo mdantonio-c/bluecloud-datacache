@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  backend:
+    ports:
+      - ${BACKEND_PORT}:${FLASK_DEFAULT_PORT}
+  
+

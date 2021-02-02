@@ -1,0 +1,22 @@
+---
+project:
+  title: BlueCloud
+  description: "REST APIs for BlueCloud Data Cache"
+  version: "0.1"
+  rapydo: "1.0"
+  
+
+variables:
+
+  env:
+
+    FRONTEND_FRAMEWORK: nofrontend
+    AUTH_SERVICE: sqlalchemy
+    ACTIVATE_ALCHEMY: 1
+    ACTIVATE_POSTGRES: 1
+    ACTIVATE_RABBIT: 1
+    ACTIVATE_REDIS: 1
+    ACTIVATE_CELERY: 1
+    CELERY_BROKER: RABBIT
+    CELERY_BACKEND: REDIS
+     
