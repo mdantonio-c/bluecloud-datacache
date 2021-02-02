@@ -25,7 +25,7 @@ class Download(EndpointResource):
         return self.response("")
 
     @decorators.auth.require()
-    @decorators.marshal_with(DownloadURLs, code=400)
+    @decorators.marshal_with(DownloadURLs, code=200)
     @decorators.endpoint(
         path="/download/<uuid>",
         summary="Request a download url for an order",
