@@ -1,4 +1,5 @@
 from typing import List
+
 from restapi import decorators
 from restapi.models import Schema, fields
 from restapi.rest.definition import EndpointResource, Response
@@ -19,9 +20,7 @@ class Order(EndpointResource):
     @decorators.endpoint(
         path="/order",
         summary="Create a new order by providing a list of URLs",
-        responses={
-            "202": "Order creation accepted"
-        }
+        responses={"202": "Order creation accepted"},
     )
     def post(self, marine_id: str, urls: List[str]) -> Response:
 
@@ -30,17 +29,15 @@ class Order(EndpointResource):
         log.info("Launch a celery task to download urls in the marine_id folder")
 
         # Assign with the uuid of newly created resource
-        data = {}
+        task_id = "..."
 
-        return self.response(data)
+        return self.response(task_id)
 
     @decorators.auth.require()
     @decorators.endpoint(
         path="/order/<uuid>",
         summary="Delete an order",
-        responses={
-            "204": "Order successfully deleted"
-        }
+        responses={"204": "Order successfully deleted"},
     )
     def delete(self, uuid: str) -> Response:
 
