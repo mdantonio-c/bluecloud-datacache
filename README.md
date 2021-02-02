@@ -43,6 +43,8 @@ _RV: 1.0
     ]
 }
 
+# Get swagger spec:
+http GET localhost:8080/api/specs
 ```
 
 
