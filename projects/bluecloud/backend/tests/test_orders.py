@@ -50,7 +50,7 @@ class TestApp(BaseTests):
         assert "marine_id" not in response
         assert "order_number" not in response
         assert "downloads" in response
-        assert response["downloads"] == "Not a valid list."
+        assert response["downloads"] == ["Not a valid list."]
 
         # #############################################################
         # Empty downloads list
