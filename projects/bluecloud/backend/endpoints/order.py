@@ -2,7 +2,7 @@ from typing import List, TypedDict
 
 from restapi import decorators
 from restapi.config import TESTING
-from restapi.models import Schema, fields
+from restapi.models import AdvancedList, Schema, fields
 from restapi.rest.definition import EndpointResource, Response
 from restapi.utilities.logs import log
 
@@ -30,7 +30,7 @@ class OrderInputSchema(Schema):
     # Unique order number
     order_number = fields.Str(required=True)
     # List of downloads
-    downloads = fields.List(fields.Nested(Download), required=True)
+    downloads = AdvancedList(fields.Nested(Download), required=True)
     # Used to test the endpoint without call back Maris
     # During tests is automatically defaulted to True ( === TESTING)
     debug = fields.Boolean(missing=TESTING)
