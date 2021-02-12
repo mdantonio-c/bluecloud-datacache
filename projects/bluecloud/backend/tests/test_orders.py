@@ -6,7 +6,7 @@ from restapi.tests import API_URI, BaseTests, FlaskClient
 
 
 class TestApp(BaseTests):
-    def test_orders(self, client: FlaskClient, fake: Faker) -> None:
+    def test_order_endpoint_definition(self, client: FlaskClient) -> None:
 
         r = client.get(f"{API_URI}/order")
         assert r.status_code == 405
@@ -23,6 +23,7 @@ class TestApp(BaseTests):
         r = client.delete(f"{API_URI}/order/invalid")
         assert r.status_code == 401
 
+    def test_order_creation(self, client: FlaskClient, fake: Faker) -> None:
         headers, _ = self.do_login(client, None, None)
 
         # #############################################################
@@ -192,3 +193,9 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 200
         self.get_content(r) == "Debug mode enabled"
+
+    def test_order_deletion(self, client: FlaskClient, fake: Faker) -> None:
+
+        # Not implemented yet
+        r = client.delete(f"{API_URI}/order/invalid")
+        assert r.status_code == 204
