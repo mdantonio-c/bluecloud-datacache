@@ -196,6 +196,8 @@ class TestApp(BaseTests):
 
     def test_order_deletion(self, client: FlaskClient, fake: Faker) -> None:
 
+        headers, _ = self.do_login(client, None, None)
+
         # Not implemented yet
-        r = client.delete(f"{API_URI}/order/invalid")
+        r = client.delete(f"{API_URI}/order/invalid", headers=headers)
         assert r.status_code == 204
