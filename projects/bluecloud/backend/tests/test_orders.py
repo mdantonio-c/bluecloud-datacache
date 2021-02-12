@@ -46,10 +46,11 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 400
         response = self.get_content(r)
-        assert "request_id" in response
-        assert "marine_id" in response
-        assert "order_number" in response
+        assert "request_id" not in response
+        assert "marine_id" not in response
+        assert "order_number" not in response
         assert "downloads" in response
+        assert response["downloads"] == "Not a valid list."
 
         # #############################################################
         # Empty downloads list
