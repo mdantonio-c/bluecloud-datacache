@@ -23,7 +23,7 @@ class TestApp(BaseTests):
         r = client.delete(f"{API_URI}/order/invalid")
         assert r.status_code == 401
 
-    def test_order_creation(self, client: FlaskClient, fake: Faker) -> None:
+    def test_order_creation(self, client: FlaskClient, faker: Faker) -> None:
         headers, _ = self.do_login(client, None, None)
 
         # #############################################################
@@ -44,10 +44,10 @@ class TestApp(BaseTests):
         # #############################################################
         # Wrong types
         data = {
-            "request_id": fake.pyint(),
-            "marine_id": fake.pyint(),
-            "order_number": fake.pyint(),
-            "downloads": fake.pystr(),
+            "request_id": faker.pyint(),
+            "marine_id": faker.pyint(),
+            "order_number": faker.pyint(),
+            "downloads": faker.pystr(),
         }
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 400
@@ -62,9 +62,9 @@ class TestApp(BaseTests):
         # Empty downloads list
 
         data = {
-            "request_id": fake.pystr(),
-            "marine_id": fake.pystr(),
-            "order_number": fake.pystr(),
+            "request_id": faker.pystr(),
+            "marine_id": faker.pystr(),
+            "order_number": faker.pystr(),
             "downloads": [],
         }
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
@@ -80,9 +80,9 @@ class TestApp(BaseTests):
         # Wrong data in download list
 
         data = {
-            "request_id": fake.pystr(),
-            "marine_id": fake.pystr(),
-            "order_number": fake.pystr(),
+            "request_id": faker.pystr(),
+            "marine_id": faker.pystr(),
+            "order_number": faker.pystr(),
             "downloads": json.dumps([{}]),
         }
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
@@ -105,15 +105,15 @@ class TestApp(BaseTests):
         ]
 
         data = {
-            "request_id": fake.pystr(),
-            "marine_id": fake.pystr(),
-            "order_number": fake.pystr(),
+            "request_id": faker.pystr(),
+            "marine_id": faker.pystr(),
+            "order_number": faker.pystr(),
             "downloads": json.dumps(
                 [
                     {
-                        "url": fake.pystr(),
-                        "filename": fake.pyint(),
-                        "order_line": fake.pyint(),
+                        "url": faker.pystr(),
+                        "filename": faker.pyint(),
+                        "order_line": faker.pyint(),
                     }
                 ]
             ),
@@ -136,20 +136,20 @@ class TestApp(BaseTests):
         # #############################################################
         data = {
             "debug": True,
-            "request_id": fake.pystr(),
-            "marine_id": fake.pystr(),
-            "order_number": fake.pystr(),
+            "request_id": faker.pystr(),
+            "marine_id": faker.pystr(),
+            "order_number": faker.pystr(),
             "downloads": json.dumps(
                 [
                     {
                         "url": "https://www.google.com",
-                        "filename": fake.file_name(),
-                        "order_line": fake.pystr(),
+                        "filename": faker.file_name(),
+                        "order_line": faker.pystr(),
                     },
                     {
-                        "url": fake.pystr(),
-                        "filename": fake.pyint(),
-                        "order_line": fake.pyint(),
+                        "url": faker.pystr(),
+                        "filename": faker.pyint(),
+                        "order_line": faker.pyint(),
                     },
                 ]
             ),
@@ -172,20 +172,20 @@ class TestApp(BaseTests):
 
         data = {
             "debug": True,
-            "request_id": fake.pystr(),
-            "marine_id": fake.pystr(),
-            "order_number": fake.pystr(),
+            "request_id": faker.pystr(),
+            "marine_id": faker.pystr(),
+            "order_number": faker.pystr(),
             "downloads": json.dumps(
                 [
                     {
                         "url": "https://www.google.com",
-                        "filename": fake.file_name(),
-                        "order_line": fake.pystr(),
+                        "filename": faker.file_name(),
+                        "order_line": faker.pystr(),
                     },
                     {
                         "url": "https://www.google.com",
-                        "filename": fake.file_name(),
-                        "order_line": fake.pystr(),
+                        "filename": faker.file_name(),
+                        "order_line": faker.pystr(),
                     },
                 ]
             ),
@@ -194,7 +194,7 @@ class TestApp(BaseTests):
         assert r.status_code == 200
         self.get_content(r) == "Debug mode enabled"
 
-    def test_order_deletion(self, client: FlaskClient, fake: Faker) -> None:
+    def test_order_deletion(self, client: FlaskClient, faker: Faker) -> None:
 
         headers, _ = self.do_login(client, None, None)
 
