@@ -4,13 +4,11 @@ project:
   description: "REST APIs for BlueCloud Data Cache"
   version: "0.1"
   rapydo: "1.0"
-  
 
 variables:
-
   env:
-
     FRONTEND_FRAMEWORK: nofrontend
+    CORS_ALLOWED_ORIGIN: "*"
     AUTH_SERVICE: sqlalchemy
     ACTIVATE_ALCHEMY: 1
     ACTIVATE_POSTGRES: 1
@@ -19,4 +17,3 @@ variables:
     ACTIVATE_CELERY: 1
     CELERY_BROKER: RABBIT
     CELERY_BACKEND: REDIS
-     
