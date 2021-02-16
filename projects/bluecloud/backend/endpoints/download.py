@@ -11,7 +11,7 @@ class DownloadURLs(Schema):
 
 class Download(EndpointResource):
 
-    labels = ["custom"]
+    labels = ["download"]
 
     @decorators.auth.require()
     @decorators.endpoint(
