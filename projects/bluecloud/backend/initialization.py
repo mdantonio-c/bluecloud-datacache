@@ -1,5 +1,6 @@
 # from restapi.utilities.logs import log
-from restapi.connectors import sqlalchemy
+# from restapi.connectors import sqlalchemy
+
 
 class Initializer:
     """

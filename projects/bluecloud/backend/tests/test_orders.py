@@ -192,7 +192,7 @@ class TestApp(BaseTests):
         }
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 200
-        self.get_content(r) == "Debug mode enabled"
+        assert self.get_content(r) == "Debug mode enabled"
 
     def test_order_deletion(self, client: FlaskClient, faker: Faker) -> None:
 
