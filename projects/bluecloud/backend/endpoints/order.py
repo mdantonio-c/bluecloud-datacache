@@ -38,7 +38,7 @@ class OrderInputSchema(Schema):
 
 class Order(EndpointResource):
 
-    labels = ["order"]
+    labels = ["orders"]
 
     @decorators.auth.require()
     @decorators.use_kwargs(OrderInputSchema)
