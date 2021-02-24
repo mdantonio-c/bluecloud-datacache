@@ -1,6 +1,6 @@
 # Bluecloud Datacache
 
-REST APIs for BlueCloud Data Cache
+REST APIs for BlueCloud Data Cache version 0.2
 
 To start with this very simple Proof of Concept:
 
@@ -8,7 +8,7 @@ To start with this very simple Proof of Concept:
 2.  install python
 3.  install pip
 4.  clone this repository
-5.  install rapydo (`sudo pip3 install git+https://github.com/rapydo/do.git@1.0`)
+5.  install rapydo (`sudo pip3 install git+https://github.com/rapydo/do.git@1.1`)
 6.  initialize the instance (`rapydo init`). This command also create a .projectrc with default options
 7.  pull docker images (`rapydo pull`)
 8.  start the stack (`rapydo start`)
