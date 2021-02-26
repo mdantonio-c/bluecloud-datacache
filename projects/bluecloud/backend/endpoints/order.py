@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 from bluecloud.endpoints.schemas import DownloadType, OrderInputSchema
@@ -32,7 +33,7 @@ class Order(EndpointResource):
         debug: bool,
     ) -> Response:
 
-        path = Uploader.absolute_upload_file(order_number, subfolder=marine_id)
+        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
         log.info("Create a new order in {}", path)
 
         if path.exists():

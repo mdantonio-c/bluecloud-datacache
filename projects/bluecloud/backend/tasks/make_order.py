@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 from bluecloud.endpoints.schemas import DownloadType
@@ -8,13 +9,15 @@ from restapi.utilities.logs import log
 
 
 @CeleryExt.task()
-def make_order(self, marine_id: str, order_number: str, downloads: List[DownloadType]):
+def make_order(
+    self, marine_id: str, order_number: str, downloads: List[DownloadType]
+) -> str:
 
-    path = Uploader.absolute_upload_file(order_number, subfolder=marine_id)
+    path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
 
     # it is expected to be created by the endpoint
     if not path.exists():
-        raise NotFound(path)
+        raise NotFound(str(path))
 
     with open(path.joinpath("test.success"), "w+") as f:
         f.write("success!")
