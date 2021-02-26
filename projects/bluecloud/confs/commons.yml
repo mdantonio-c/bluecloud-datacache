@@ -1,13 +1,10 @@
-# Customize this file to include compose configurations common to bluprints
-version: "3"
-# services:
-#   backend:
-#     environment:
-#       VARIABLE: VALUE
+version: "3.2"
 
-# volumes:
-#   -
+services:
+  backend:
+    volumes:
+      - ${VANILLA_DIR}/data/uploads:/uploads
 
-# networks:
-#   -
-
+  celery:
+    volumes:
+      - ${VANILLA_DIR}/data/uploads:/uploads

@@ -3,6 +3,7 @@ from typing import List
 from bluecloud.endpoints.schemas import DownloadType, OrderInputSchema
 from restapi import decorators
 from restapi.connectors import celery
+from restapi.exceptions import Conflict
 from restapi.rest.definition import EndpointResource, Response
 from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
@@ -19,7 +20,7 @@ class Order(EndpointResource):
         summary="Create a new order by providing a list of URLs",
         responses={
             202: "Order creation accepted. Operation ID is returned",
-            409: "Order already exists",
+            409: "Order already existsfor the given marine id",
         },
     )
     def post(
@@ -33,6 +34,13 @@ class Order(EndpointResource):
 
         path = Uploader.absolute_upload_file(order_number, subfolder=marine_id)
         log.info("Create a new order in {}", path)
+
+        if path.exists():
+            raise Conflict(
+                f"Order {order_number} already exists for marine id {marine_id}"
+            )
+
+        path.mkdir()
 
         log.info("Launch a celery task to download urls in the marine_id folder")
 
