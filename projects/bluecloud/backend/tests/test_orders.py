@@ -170,11 +170,13 @@ class TestApp(BaseTests):
         assert response["downloads"]["1"]["filename"] == ["Not a valid string."]
         assert response["downloads"]["1"]["order_line"] == ["Not a valid string."]
 
+        marine_id = faker.pystr()
+        order_number = faker.pystr()
         data = {
             "debug": True,
             "request_id": faker.pystr(),
-            "marine_id": faker.pystr(),
-            "order_number": faker.pystr(),
+            "marine_id": marine_id,
+            "order_number": order_number,
             "downloads": json.dumps(
                 [
                     {
@@ -192,7 +194,13 @@ class TestApp(BaseTests):
         }
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 200
-        assert self.get_content(r) == "Debug mode enabled"
+        # assert self.get_content(r) == the uuid of the celery task
+
+        # The order already exists
+        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        assert r.status_code == 409
+        error = f"Order {order_number} already exists for marine id {marine_id}"
+        assert self.get_content(r) == error
 
     def test_order_deletion(self, client: FlaskClient, faker: Faker) -> None:
 
