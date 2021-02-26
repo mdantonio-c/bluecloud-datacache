@@ -1,39 +1,11 @@
-from typing import List, TypedDict
+from typing import List
 
+from bluecloud.endpoints.schemas import DownloadType, OrderInputSchema
 from restapi import decorators
-from restapi.config import TESTING
-from restapi.models import AdvancedList, Schema, fields
+from restapi.connectors import celery
 from restapi.rest.definition import EndpointResource, Response
+from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
-
-
-class DownloadType(TypedDict):
-    url: str
-    filename: str
-    order_line: str
-
-
-class Download(Schema):
-    # download url to get the data
-    url = fields.Url(required=True)
-    # the new filename for the datafile
-    filename = fields.Str(required=True)
-    # unique number for identification
-    order_line = fields.Str(required=True)
-
-
-class OrderInputSchema(Schema):
-    # Unique Id number for debugging and communication
-    request_id = fields.Str(required=True)
-    # Unique ID to identify the web-site user
-    marine_id = fields.Str(required=True)
-    # Unique order number
-    order_number = fields.Str(required=True)
-    # List of downloads
-    downloads = AdvancedList(fields.Nested(Download), required=True)
-    # Used to test the endpoint without call back Maris
-    # During tests is automatically defaulted to True ( === TESTING)
-    debug = fields.Boolean(missing=TESTING)
 
 
 class Order(EndpointResource):
@@ -45,7 +17,10 @@ class Order(EndpointResource):
     @decorators.endpoint(
         path="/order",
         summary="Create a new order by providing a list of URLs",
-        responses={"202": "Order creation accepted"},
+        responses={
+            202: "Order creation accepted. Operation ID is returned",
+            409: "Order already exists",
+        },
     )
     def post(
         self,
@@ -56,17 +31,17 @@ class Order(EndpointResource):
         debug: bool,
     ) -> Response:
 
-        log.info("Create a new order")
+        path = Uploader.absolute_upload_file(order_number, subfolder=marine_id)
+        log.info("Create a new order in {}", path)
 
         log.info("Launch a celery task to download urls in the marine_id folder")
 
-        # Assign with the uuid of newly created resource
-        if debug:
-            task_id = "Debug mode enabled"
-        else:
-            task_id = "..."
+        celery_ext = celery.get_instance()
+        task = celery_ext.celery_app.send_task(
+            "make_order", args=[marine_id, order_number, downloads]
+        )
 
-        return self.response(task_id)
+        return self.response(task.id)
 
     @decorators.auth.require()
     @decorators.endpoint(
