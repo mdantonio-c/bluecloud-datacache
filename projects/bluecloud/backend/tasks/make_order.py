@@ -10,7 +10,10 @@ from restapi.utilities.logs import log
 
 @CeleryExt.task()
 def make_order(
-    self, marine_id: str, order_number: str, downloads: List[DownloadType]
+    self: CeleryExt.TaskType,
+    marine_id: str,
+    order_number: str,
+    downloads: List[DownloadType],
 ) -> str:
 
     path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
