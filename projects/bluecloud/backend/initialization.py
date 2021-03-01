@@ -1,5 +1,6 @@
-# from restapi.utilities.logs import log
-# from restapi.connectors import sqlalchemy
+from typing import Optional
+
+from restapi.customizer import FlaskApp
 
 
 class Initializer:
@@ -8,10 +9,10 @@ class Initializer:
     Implement the constructor to add operations performed one-time at initialization
     """
 
-    def __init__(self, app=None):
+    def __init__(self, app: Optional[FlaskApp] = None) -> None:
         # c = sqlalchemy.get_instance()
         pass
 
     # This method is called after normal initialization if TESTING mode is enabled
-    def initialize_testing_environment(self):
+    def initialize_testing_environment(self) -> None:
         pass
