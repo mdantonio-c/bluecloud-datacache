@@ -4,10 +4,14 @@ from typing import List
 
 import requests
 from bluecloud.endpoints.schemas import DownloadType
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from restapi.connectors.celery import CeleryExt
 from restapi.exceptions import NotFound
 from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 
 DOWNLOAD_HEADERS = {
     "User-Agent": "BlueCloud DataCache HTTP-APIs",
@@ -17,6 +21,12 @@ DOWNLOAD_HEADERS = {
     "Accept-Language": "en-US,en;q=0.5",
     "Accept-Encoding": "gzip, deflate",
 }
+
+
+class ErrorCodes:
+    UNREACHABLE_DOWNLOAD_PATH = ("001", "Download path is unreachable")
+    INVALID_RESPONSE = ("002", "Invalid response, received status different than 200")
+    UNEXPECTED_ERROR = ("999", "An unexpected error occurred")
 
 
 @CeleryExt.task()
@@ -40,20 +50,19 @@ def make_order(
     cache.mkdir(exist_ok=True)
     logs.mkdir(exist_ok=True)
 
-    log.info("Task ID: {}", self.request.id)
-    log.info("Request ID = {}", request_id)
-    log.info("Marine ID = {}", marine_id)
-    log.info("Order number = {}", order_number)
-    log.info("Download list = {}", downloads[0:10])
+    # log.info("Task ID: {}", self.request.id)
+    # log.info("Request ID = {}", request_id)
+    # log.info("Marine ID = {}", marine_id)
+    # log.info("Order number = {}", order_number)
+    # log.info("Download list = {}", downloads[0:10])
 
     response = {"request_id": request_id, "order_number": order_number, "errors": []}
     for d in downloads:
         download_url = d["url"]
         filename = d["filename"]
+        order_line = d["order_line"]
 
-        log.info(download_url)
-        log.info(filename)
-        log.info(d["order_line"])
+        log.debug("{} -> {}", download_url, filename)
 
         try:
 
@@ -72,20 +81,46 @@ def make_order(
                         f.write(chunk)
 
         except requests.exceptions.ConnectionError as e:
-            log.error(str(e))
-            log.critical("ErrorCodes.UNREACHABLE_DOWNLOAD_PATH")
+            log.error(e)
+            response["errors"].append(
+                {
+                    "url": download_url,
+                    "order_line": order_line,
+                    "error_number": ErrorCodes.UNREACHABLE_DOWNLOAD_PATH[0],
+                }
+            )
             continue
         except requests.exceptions.MissingSchema as e:
-            log.error(str(e))
-            log.critical("ErrorCodes.UNREACHABLE_DOWNLOAD_PATH")
+            log.error(e)
+            response["errors"].append(
+                {
+                    "url": download_url,
+                    "order_line": order_line,
+                    "error_number": ErrorCodes.UNREACHABLE_DOWNLOAD_PATH[0],
+                }
+            )
             continue
         except BaseException as e:
-            log.error(str(e))
-            log.critical("ErrorCodes.UNKNOWN_DOWNLOAD_ERROR")
+            log.error(e)
+            response["errors"].append(
+                {
+                    "url": download_url,
+                    "order_line": order_line,
+                    "error_number": ErrorCodes.UNKNOWN_DOWNLOAD_ERROR[0],
+                }
+            )
             continue
 
         if r.status_code != 200:
-            log.critical("ErrorCodes.UNREACHABLE_DOWNLOAD_PATH")
+            log.error("Invalid response: {}", r.status_code)
+            response["errors"].append(
+                {
+                    "url": download_url,
+                    "order_line": order_line,
+                    "error_number": ErrorCodes.INVALID_RESPONSE[0],
+                }
+            )
+
             continue
 
     log.info("Task executed!")
