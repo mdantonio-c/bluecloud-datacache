@@ -43,6 +43,11 @@ data = {
                 "filename": faker.file_name(),
                 "order_line": faker.pystr(),
             },
+            {
+                "url": "https://thisisaninvalidurl.com/v1.0.zip",
+                "filename": faker.file_name(),
+                "order_line": faker.pystr(),
+            },
         ]
     ),
     "debug": True,
