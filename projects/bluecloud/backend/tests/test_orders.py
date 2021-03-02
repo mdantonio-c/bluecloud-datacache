@@ -176,9 +176,18 @@ class TestApp(BaseTests):
         marine_id = faker.pystr()
         order_number = faker.pystr()
         request_id = faker.pystr()
-        file1_name = faker.file_name()
-        file2_name = faker.file_name()
-        file3_name = faker.file_name()
+
+        filename_1 = faker.file_name()
+        filename_2 = faker.file_name()
+        filename_3 = faker.file_name()
+
+        order_line1 = faker.pystr()
+        order_line2 = faker.pystr()
+        order_line3 = faker.pystr()
+
+        download_url1 = "https://www.google.com"
+        download_url2 = "https://github.com/rapydo/http-api/archive/v1.0.zip"
+        download_url3 = "https://invalidurlafailisexpected.zzz/f.zip"
 
         data = {
             "debug": True,
@@ -188,14 +197,19 @@ class TestApp(BaseTests):
             "downloads": json.dumps(
                 [
                     {
-                        "url": "https://www.google.com",
-                        "filename": file1_name,
-                        "order_line": faker.pystr(),
+                        "url": download_url1,
+                        "filename": filename_1,
+                        "order_line": order_line1,
                     },
                     {
-                        "url": "https://www.google.com",
-                        "filename": file2_name,
-                        "order_line": faker.pystr(),
+                        "url": download_url2,
+                        "filename": filename_2,
+                        "order_line": order_line2,
+                    },
+                    {
+                        "url": download_url3,
+                        "filename": filename_3,
+                        "order_line": order_line3,
                     },
                 ]
             ),
@@ -221,9 +235,9 @@ class TestApp(BaseTests):
 
         assert logs.joinpath("response.json").exists()
 
-        assert cache.joinpath(file1_name).exists()
-        assert cache.joinpath(file2_name).exists()
-        assert not cache.joinpath(file3_name).exists()
+        assert cache.joinpath(filename_1).exists()
+        assert cache.joinpath(filename_2).exists()
+        assert not cache.joinpath(filename_2).exists()
 
         with open(logs.joinpath("response.json")) as json_file:
             response = json.load(json_file)
@@ -235,8 +249,10 @@ class TestApp(BaseTests):
             assert response["request_id"] == request_id
             assert response["order_number"] == order_number
             assert isinstance(response["errors"], list)
-            # assert len(response["errors"]) == 1
-            # assert response["errors"][0]
+            assert len(response["errors"]) == 1
+            assert response["errors"][0]["order_line"] == order_line3
+            assert response["errors"][0]["url"] == download_url3
+            assert response["errors"][0]["error_number"] == "001"
 
         # The order already exists
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
