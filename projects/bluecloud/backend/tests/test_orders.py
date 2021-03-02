@@ -1,7 +1,10 @@
 import json
+import time
+from pathlib import Path
 from typing import Any, Dict
 
 from faker import Faker
+from restapi.services.uploader import Uploader
 from restapi.tests import API_URI, BaseTests, FlaskClient
 
 
@@ -172,21 +175,26 @@ class TestApp(BaseTests):
 
         marine_id = faker.pystr()
         order_number = faker.pystr()
+        request_id = faker.pystr()
+        file1_name = faker.file_name()
+        file2_name = faker.file_name()
+        file3_name = faker.file_name()
+
         data = {
             "debug": True,
-            "request_id": faker.pystr(),
+            "request_id": request_id,
             "marine_id": marine_id,
             "order_number": order_number,
             "downloads": json.dumps(
                 [
                     {
                         "url": "https://www.google.com",
-                        "filename": faker.file_name(),
+                        "filename": file1_name,
                         "order_line": faker.pystr(),
                     },
                     {
                         "url": "https://www.google.com",
-                        "filename": faker.file_name(),
+                        "filename": file2_name,
                         "order_line": faker.pystr(),
                     },
                 ]
@@ -195,6 +203,40 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 200
         # assert self.get_content(r) == the uuid of the celery task
+
+        # Not the best... but enough for now
+        time.sleep(60)
+
+        # Now the order should be completed, let's verify the result:
+
+        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+
+        assert path.exists()
+
+        cache = path.joinpath("cache")
+        logs = path.joinpath("logs")
+
+        assert cache.exists()
+        assert logs.exists()
+
+        assert logs.joinpath("response.json").exists()
+
+        assert cache.joinpath(file1_name).exists()
+        assert cache.joinpath(file2_name).exists()
+        assert not cache.joinpath(file3_name).exists()
+
+        with open(logs.joinpath("response.json")) as json_file:
+            response = json.load(json_file)
+
+            assert response is not None
+            assert "request_id" in response
+            assert "order_number" in response
+            assert "errors" in response
+            assert response["request_id"] == request_id
+            assert response["order_number"] == order_number
+            assert isinstance(response["errors"], list)
+            # assert len(response["errors"]) == 1
+            # assert response["errors"][0]
 
         # The order already exists
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
