@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import List
 
@@ -33,6 +34,12 @@ def make_order(
     if not path.exists():
         raise NotFound(str(path))
 
+    cache = path.joinpath("cache")
+    logs = path.joinpath("logs")
+
+    cache.mkdir(exist_ok=True)
+    logs.mkdir(exist_ok=True)
+
     log.info("Task ID: {}", self.request.id)
     log.info("Request ID = {}", request_id)
     log.info("Marine ID = {}", marine_id)
@@ -57,7 +64,7 @@ def make_order(
                 headers=DOWNLOAD_HEADERS,
             )
 
-            local_path = path.joinpath(filename)
+            local_path = cache.joinpath(filename)
 
             with open(local_path, "wb") as f:
                 for chunk in r.iter_content(chunk_size=1024):
@@ -83,5 +90,7 @@ def make_order(
 
     log.info("Task executed!")
 
-    print(response)
+    with open(logs.joinpath("response.json"), "w+") as f:
+        f.write(json.dumps(response))
+
     return "Task executed!"
