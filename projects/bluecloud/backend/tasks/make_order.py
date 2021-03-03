@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List
+from typing import List, TypedDict
 
 import requests
 from bluecloud.endpoints.schemas import DownloadType
@@ -11,6 +11,18 @@ from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+
+class DownloadError(TypedDict):
+    url: str
+    order_line: str
+    error_number: str
+
+
+class ResponseType(TypedDict):
+    request_id: str
+    order_number: str
+    errors: List[DownloadError]
 
 
 DOWNLOAD_HEADERS = {
@@ -56,7 +68,12 @@ def make_order(
     # log.info("Order number = {}", order_number)
     # log.info("Download list = {}", downloads[0:10])
 
-    response = {"request_id": request_id, "order_number": order_number, "errors": []}
+    response: ResponseType = {
+        "request_id": request_id,
+        "order_number": order_number,
+        "errors": [],
+    }
+
     for d in downloads:
         download_url = d["url"]
         filename = d["filename"]
@@ -75,10 +92,10 @@ def make_order(
 
             local_path = cache.joinpath(filename)
 
-            with open(local_path, "wb") as f:
+            with open(local_path, "wb") as downloaded_file:
                 for chunk in r.iter_content(chunk_size=1024):
                     if chunk:  # filter out keep-alive new chunks
-                        f.write(chunk)
+                        downloaded_file.write(chunk)
 
         except requests.exceptions.ConnectionError as e:
             log.error(e)
@@ -106,7 +123,7 @@ def make_order(
                 {
                     "url": download_url,
                     "order_line": order_line,
-                    "error_number": ErrorCodes.UNKNOWN_DOWNLOAD_ERROR[0],
+                    "error_number": ErrorCodes.UNEXPECTED_ERROR[0],
                 }
             )
             continue
@@ -125,7 +142,8 @@ def make_order(
 
     log.info("Task executed!")
 
-    with open(logs.joinpath("response.json"), "w+") as f:
-        f.write(json.dumps(response))
+    log_path = logs.joinpath("response.json")
+    with open(log_path, "w+") as log_file:
+        log_file.write(json.dumps(response))
 
     return "Task executed!"
