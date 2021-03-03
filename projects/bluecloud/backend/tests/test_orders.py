@@ -237,7 +237,7 @@ class TestApp(BaseTests):
 
         assert cache.joinpath(filename_1).exists()
         assert cache.joinpath(filename_2).exists()
-        assert not cache.joinpath(filename_2).exists()
+        assert not cache.joinpath(filename_3).exists()
 
         with open(logs.joinpath("response.json")) as json_file:
             response = json.load(json_file)
