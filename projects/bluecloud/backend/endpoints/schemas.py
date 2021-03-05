@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 from restapi.config import TESTING
-from restapi.models import AdvancedList, Schema, fields
+from restapi.models import Schema, fields
 
 
 class DownloadType(TypedDict):
@@ -27,7 +27,7 @@ class OrderInputSchema(Schema):
     # Unique order number
     order_number = fields.Str(required=True)
     # List of downloads
-    downloads = AdvancedList(fields.Nested(Download), required=True)
+    downloads = fields.List(fields.Nested(Download), required=True)
     # Used to test the endpoint without call back Maris
     # During tests is automatically defaulted to True ( === TESTING)
     debug = fields.Boolean(missing=TESTING)
