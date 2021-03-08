@@ -149,7 +149,9 @@ def make_order(
 
     if downloaded > 0:
 
-        shutil.make_archive(base_name=zip_file, format="zip", root_dir=cache)
+        # Argument "base_name" to "make_archive" has incompatible type "Path";
+        # expected "str"
+        shutil.make_archive(base_name=str(zip_file), format="zip", root_dir=cache)
 
     # split the zip
 
