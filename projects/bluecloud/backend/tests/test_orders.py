@@ -267,19 +267,19 @@ class TestApp(BaseTests):
     def test_download_endpoint_definition(self, client: FlaskClient) -> None:
 
         r = client.get(f"{API_URI}/download")
-        assert r.status_code == 405
+        assert r.status_code == 404
 
         r = client.put(f"{API_URI}/download")
-        assert r.status_code == 405
+        assert r.status_code == 404
 
         r = client.post(f"{API_URI}/download")
-        assert r.status_code == 405
+        assert r.status_code == 404
 
         r = client.delete(f"{API_URI}/download")
-        assert r.status_code == 405
+        assert r.status_code == 404
 
         # Not implemented yet
-        r = client.get(f"{API_URI}/token")
+        r = client.get(f"{API_URI}/download/token")
         assert r.status_code == 204
 
         r = client.put(f"{API_URI}/download/token")
