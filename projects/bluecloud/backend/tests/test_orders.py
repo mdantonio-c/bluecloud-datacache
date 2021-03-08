@@ -292,16 +292,16 @@ class TestApp(BaseTests):
         assert r.status_code == 405
 
         r = client.get(f"{API_URI}/download/marine_id/order_number")
-        assert r.status_code == 405
+        assert r.status_code == 401
 
         r = client.put(f"{API_URI}/download/marine_id/order_number")
         assert r.status_code == 405
 
-        r = client.delete(f"{API_URI}/download/marine_id/order_number")
+        r = client.post(f"{API_URI}/download/marine_id/order_number")
         assert r.status_code == 405
 
-        r = client.post(f"{API_URI}/download/marine_id/order_number")
-        assert r.status_code == 401
+        r = client.delete(f"{API_URI}/download/marine_id/order_number")
+        assert r.status_code == 405
 
     def test_order_download(self, client: FlaskClient) -> None:
 
@@ -309,16 +309,16 @@ class TestApp(BaseTests):
         marine_id = self.get("marine_id")
         order_number = self.get("order_number")
 
-        r = client.post(f"{API_URI}/download/invalid/invalid", headers=headers)
+        r = client.get(f"{API_URI}/download/invalid/invalid", headers=headers)
         assert r.status_code == 404
 
-        r = client.post(f"{API_URI}/download/{marine_id}/invalid", headers=headers)
+        r = client.get(f"{API_URI}/download/{marine_id}/invalid", headers=headers)
         assert r.status_code == 404
 
-        r = client.post(f"{API_URI}/download/invalid/{order_number}", headers=headers)
+        r = client.get(f"{API_URI}/download/invalid/{order_number}", headers=headers)
         assert r.status_code == 404
 
-        r = client.post(
+        r = client.get(
             f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
         )
         assert r.status_code == 200
