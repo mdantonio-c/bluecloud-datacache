@@ -32,6 +32,8 @@ marine_ids = [
     "my_marineid_5",
 ]
 
+marine_ids = ["my_only_marine_id"]
+
 data = {
     "marine_id": rand.choice(marine_ids),
     "order_number": faker.pystr(),

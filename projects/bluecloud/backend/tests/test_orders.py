@@ -229,9 +229,11 @@ class TestApp(BaseTests):
 
         cache = path.joinpath("cache")
         logs = path.joinpath("logs")
+        zip_file = path.join("output.zip")
 
         assert cache.exists()
         assert logs.exists()
+        assert zip_file.exists()
 
         assert logs.joinpath("response.json").exists()
 
