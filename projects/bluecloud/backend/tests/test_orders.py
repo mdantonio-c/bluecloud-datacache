@@ -174,7 +174,9 @@ class TestApp(BaseTests):
         assert response["downloads"]["1"]["order_line"] == ["Not a valid string."]
 
         marine_id = faker.pystr()
+        self.save("marine_id", marine_id)
         order_number = faker.pystr()
+        self.save("order_number", order_number)
         request_id = faker.pystr()
 
         filename_1 = faker.file_name()
@@ -261,6 +263,74 @@ class TestApp(BaseTests):
         assert r.status_code == 409
         error = f"Order {order_number} already exists for marine id {marine_id}"
         assert self.get_content(r) == error
+
+    def test_download_endpoint_definition(self, client: FlaskClient) -> None:
+
+        r = client.get(f"{API_URI}/download")
+        assert r.status_code == 405
+
+        r = client.put(f"{API_URI}/download")
+        assert r.status_code == 405
+
+        r = client.post(f"{API_URI}/download")
+        assert r.status_code == 405
+
+        r = client.delete(f"{API_URI}/download")
+        assert r.status_code == 405
+
+        # Not implemented yet
+        r = client.get(f"{API_URI}/token")
+        assert r.status_code == 204
+
+        r = client.put(f"{API_URI}/download/token")
+        assert r.status_code == 405
+
+        r = client.post(f"{API_URI}/download/token")
+        assert r.status_code == 405
+
+        r = client.delete(f"{API_URI}/download/token")
+        assert r.status_code == 405
+
+        r = client.get(f"{API_URI}/download/marine_id/order_number")
+        assert r.status_code == 405
+
+        r = client.put(f"{API_URI}/download/marine_id/order_number")
+        assert r.status_code == 405
+
+        r = client.delete(f"{API_URI}/download/marine_id/order_number")
+        assert r.status_code == 405
+
+        r = client.post(f"{API_URI}/download/marine_id/order_number")
+        assert r.status_code == 401
+
+    def test_order_download(self, client: FlaskClient) -> None:
+
+        headers, _ = self.do_login(client, None, None)
+        marine_id = self.get("marine_id")
+        order_number = self.get("order_number")
+
+        r = client.post(f"{API_URI}/download/invalid/invalid", header=headers)
+        assert r.status_code == 404
+
+        r = client.post(f"{API_URI}/download/{marine_id}/invalid", header=headers)
+        assert r.status_code == 404
+
+        r = client.post(f"{API_URI}/download/invalid/{order_number}", header=headers)
+        assert r.status_code == 404
+
+        r = client.post(
+            f"{API_URI}/download/{marine_id}/{order_number}", header=headers
+        )
+        assert r.status_code == 200
+
+        response = self.get_content(r)
+        assert "urls" in response
+        assert isinstance(response["urls"], list)
+
+        # This is because it is not implemented yet
+        assert len(response["urls"]) == 0
+
+        # Request download links:
 
     def test_order_deletion(self, client: FlaskClient, faker: Faker) -> None:
 
