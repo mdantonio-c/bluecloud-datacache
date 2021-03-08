@@ -309,17 +309,17 @@ class TestApp(BaseTests):
         marine_id = self.get("marine_id")
         order_number = self.get("order_number")
 
-        r = client.post(f"{API_URI}/download/invalid/invalid", header=headers)
+        r = client.post(f"{API_URI}/download/invalid/invalid", headers=headers)
         assert r.status_code == 404
 
-        r = client.post(f"{API_URI}/download/{marine_id}/invalid", header=headers)
+        r = client.post(f"{API_URI}/download/{marine_id}/invalid", headers=headers)
         assert r.status_code == 404
 
-        r = client.post(f"{API_URI}/download/invalid/{order_number}", header=headers)
+        r = client.post(f"{API_URI}/download/invalid/{order_number}", headers=headers)
         assert r.status_code == 404
 
         r = client.post(
-            f"{API_URI}/download/{marine_id}/{order_number}", header=headers
+            f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
         )
         assert r.status_code == 200
 
