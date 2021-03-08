@@ -17,7 +17,6 @@ class Download(EndpointResource):
 
     labels = ["download"]
 
-    @decorators.auth.require()
     @decorators.endpoint(
         path="/download/<token>", summary="Download a file", responses={"200": "..."}
     )
