@@ -1,4 +1,5 @@
 import json
+import shutil
 from pathlib import Path
 from typing import List, TypedDict
 
@@ -56,6 +57,8 @@ def make_order(
     if not path.exists():
         raise NotFound(str(path))
 
+    # Do not include the .zip extension
+    zip_file = path.joinpath("output")
     cache = path.joinpath("cache")
     logs = path.joinpath("logs")
 
@@ -74,6 +77,7 @@ def make_order(
         "errors": [],
     }
 
+    downloaded: int = 0
     for d in downloads:
         download_url = d["url"]
         filename = d["filename"]
@@ -97,6 +101,7 @@ def make_order(
                     if chunk:  # filter out keep-alive new chunks
                         downloaded_file.write(chunk)
 
+            downloaded += 1
         except requests.exceptions.ConnectionError as e:
             log.error(e)
             response["errors"].append(
@@ -139,6 +144,14 @@ def make_order(
             )
 
             continue
+
+    log.info("Downloaded {} files", downloaded)
+
+    if downloaded > 0:
+
+        shutil.make_archive(base_name=zip_file, format="zip", root_dir=cache)
+
+    # split the zip
 
     log.info("Task executed!")
 
