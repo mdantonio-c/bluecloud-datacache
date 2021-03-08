@@ -280,7 +280,7 @@ class TestApp(BaseTests):
 
         # Not implemented yet
         r = client.get(f"{API_URI}/download/token")
-        assert r.status_code == 204
+        assert r.status_code == 200
 
         r = client.put(f"{API_URI}/download/token")
         assert r.status_code == 405
