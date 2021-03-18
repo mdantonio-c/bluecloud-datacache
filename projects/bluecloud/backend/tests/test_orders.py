@@ -218,7 +218,7 @@ class TestApp(BaseTests):
         }
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 200
-        # assert self.get_content(r) == the uuid of the celery task
+        assert "task_id" in self.get_content(r)
 
         # Not the best... but enough for now
         time.sleep(60)

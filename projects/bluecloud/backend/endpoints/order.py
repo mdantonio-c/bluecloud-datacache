@@ -5,9 +5,14 @@ from bluecloud.endpoints.schemas import DownloadType, OrderInputSchema
 from restapi import decorators
 from restapi.connectors import celery
 from restapi.exceptions import Conflict
+from restapi.models import Schema, fields
 from restapi.rest.definition import EndpointResource, Response
 from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
+
+
+class TaskID(Schema):
+    task_id = fields.Str()
 
 
 class Order(EndpointResource):
@@ -15,13 +20,14 @@ class Order(EndpointResource):
     labels = ["orders"]
 
     @decorators.auth.require()
+    @decorators.marshal_with(TaskID, code=200)
     @decorators.use_kwargs(OrderInputSchema)
     @decorators.endpoint(
         path="/order",
         summary="Create a new order by providing a list of URLs",
         responses={
             202: "Order creation accepted. Operation ID is returned",
-            409: "Order already existsfor the given marine id",
+            409: "Order already exists for the given marine id",
         },
     )
     def post(
@@ -50,7 +56,7 @@ class Order(EndpointResource):
             "make_order", args=[request_id, marine_id, order_number, downloads]
         )
 
-        return self.response(task.id)
+        return self.response({"task_id": task.id})
 
     @decorators.auth.require()
     @decorators.endpoint(
