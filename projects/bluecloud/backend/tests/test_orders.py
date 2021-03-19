@@ -395,10 +395,16 @@ class TestApp(BaseTests):
         r = client.get(download_url)
         assert r.status_code == 200
 
+        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+
+        assert path.exists()
+
         r = client.delete(
             f"{API_URI}/order/{marine_id}/{order_number}", headers=headers
         )
         assert r.status_code == 204
+
+        assert not path.exists()
 
         r = client.get(download_url)
         assert r.status_code == 400
