@@ -1,7 +1,9 @@
 import json
+import os
 import random
 import sys
 import time
+import zipfile
 from pathlib import Path
 
 import requests
@@ -80,5 +82,31 @@ url = resp.json()["urls"][0]
 log.info("Download url = {}", url)
 
 resp = requests.get(url)
+
+download_filename = f"{order_number}.zip"
+cmd = ' curl {} --header "Authorization: Bearer {}" --output {} -O -J -L'.format(
+    url, token, download_filename
+)
+os.system(cmd)
+
+if os.path.isfile(download_filename):
+    log.info("File downloaded")
+    try:
+        with zipfile.ZipFile(download_filename, "r") as myzip:
+            errors = myzip.testzip()
+            if errors:
+                log.error("Wrong entry in the zipfile: {}", errors)
+                sys.exit(1)
+
+        log.info("Zip file verified")
+
+    except zipfile.BadZipFile as e:
+        log.error(e)
+        sys.exit(1)
+
+    os.remove(download_filename)
+
+else:
+    log.error("Warning: the download test-file has not been downloaded")
 
 requests.get(f"{host}/auth/logout", headers=headers)
