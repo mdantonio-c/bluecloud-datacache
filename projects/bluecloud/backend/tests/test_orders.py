@@ -260,7 +260,7 @@ class TestApp(BaseTests):
         assert (now - dt).total_seconds() < 10
 
         # Not the best... but enough for now
-        time.sleep(60)
+        time.sleep(20)
 
         # Now the order should be completed, let's verify the result:
 
