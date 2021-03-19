@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 from typing import List
 
@@ -73,7 +74,7 @@ class Order(EndpointResource):
 
         log.info("Order to be deleted: {} on marineID {}", order_number, marine_id)
 
-        path.rmtree()
+        shutil.rmtree(path)
 
         log.info("Order {} deleted", order_number)
 
