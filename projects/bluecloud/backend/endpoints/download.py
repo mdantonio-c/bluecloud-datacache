@@ -3,6 +3,7 @@ from restapi import decorators
 from restapi.config import UPLOAD_PATH
 from restapi.exceptions import BadRequest
 from restapi.rest.definition import EndpointResource, Response
+from restapi.services.download import Downloader
 from restapi.utilities.logs import log
 
 
@@ -26,9 +27,6 @@ class Download(EndpointResource):
         if not zippath.exists():
             raise BadRequest("Invalid token")
 
-        log.critical("Request download for path: {}", zippath)
-        # validate the token
-        # send the file content
+        log.info("Request download for path: {}", zippath)
 
-        # Downloader.send_file_streamed
-        return self.response("")
+        return Downloader.send_file_streamed(zippath)

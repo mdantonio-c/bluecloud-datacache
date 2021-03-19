@@ -1,11 +1,40 @@
 import json
 import time
+import zipfile
 from pathlib import Path
 from typing import Any, Dict
 
+import pytest
 from faker import Faker
 from restapi.services.uploader import Uploader
 from restapi.tests import API_URI, BaseTests, FlaskClient
+
+
+def download_and_verify_zip(
+    client: FlaskClient, faker: Faker, download_url: str
+) -> None:
+    # http:// or https://
+    assert download_url.startswith("http")
+    assert "/api/download/" in download_url
+
+    r = client.get(f"{API_URI}/download/invalidtoken")
+    assert r.status_code == 400
+
+    r = client.get(download_url, stream=True)
+    assert r.status_code == 200
+    local_filename = f"{faker.pystr()}.zip"
+    with open(local_filename, "wb+") as f:
+        for chunk in r.iter_content(chunk_size=1024):
+            if chunk:  # filter out keep-alive new chunks
+                f.write(chunk)
+
+    try:
+        with zipfile.ZipFile(local_filename, "r") as myzip:
+            errors = myzip.testzip()
+            assert errors is None
+
+    except zipfile.BadZipFile as e:  # pragma: no cover
+        pytest.fail(e)
 
 
 class TestApp(BaseTests):
@@ -302,7 +331,7 @@ class TestApp(BaseTests):
         r = client.delete(f"{API_URI}/download/marine_id/order_number")
         assert r.status_code == 405
 
-    def test_order_download(self, client: FlaskClient) -> None:
+    def test_order_download(self, client: FlaskClient, faker: Faker) -> None:
 
         headers, _ = self.do_login(client, None, None)
         marine_id = self.get("marine_id")
@@ -330,15 +359,8 @@ class TestApp(BaseTests):
         assert len(response["urls"]) == 1
 
         download_url = response["urls"][0]
-        # http:// or https://
-        assert download_url.startswith("http")
-        assert "/api/download/" in download_url
 
-        r = client.get(f"{API_URI}/download/invalidtoken")
-        assert r.status_code == 400
-
-        r = client.get(download_url)
-        assert r.status_code == 200
+        download_and_verify_zip(client, faker, download_url)
 
         # request a new token
         # url should be no longer available
