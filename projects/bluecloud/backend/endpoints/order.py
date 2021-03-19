@@ -1,4 +1,5 @@
 import shutil
+from datetime import datetime
 from pathlib import Path
 from typing import List
 
@@ -13,7 +14,8 @@ from restapi.utilities.logs import log
 
 
 class TaskID(Schema):
-    task_id = fields.Str()
+    request_id = fields.Str()
+    datetime = fields.DateTime(format="%Y%m%dT%H:%M:%S")
 
 
 class Order(EndpointResource):
@@ -55,7 +57,7 @@ class Order(EndpointResource):
             "make_order", args=[request_id, marine_id, order_number, downloads]
         )
 
-        return self.response({"task_id": task.id})
+        return self.response({"request_id": task.id, "datetime": datetime.now()})
 
     @decorators.auth.require()
     @decorators.endpoint(

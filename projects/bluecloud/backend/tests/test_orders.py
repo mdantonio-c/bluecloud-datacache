@@ -1,6 +1,7 @@
 import json
 import time
 import zipfile
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 
@@ -250,7 +251,13 @@ class TestApp(BaseTests):
         }
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 200
-        assert "task_id" in self.get_content(r)
+        response = self.get_content(r)
+        assert "request_id" in response
+        assert "datetime" in response
+
+        dt = datetime.strptime(response["datetime"], "%Y%m%dT%H:%M:%S")
+        now = datetime.now()
+        assert (now - dt).total_seconds() < 10
 
         # Not the best... but enough for now
         time.sleep(60)
