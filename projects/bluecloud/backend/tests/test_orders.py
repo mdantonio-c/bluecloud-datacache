@@ -278,9 +278,8 @@ class TestApp(BaseTests):
         r = client.delete(f"{API_URI}/download")
         assert r.status_code == 404
 
-        # Not implemented yet
         r = client.get(f"{API_URI}/download/token")
-        assert r.status_code == 200
+        assert r.status_code == 400
 
         r = client.put(f"{API_URI}/download/token")
         assert r.status_code == 405

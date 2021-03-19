@@ -41,10 +41,10 @@ class DownloadRequest(EndpointResource):
 
         for z in path.glob("*.zip"):
 
-            path = os.path.join(marine_id, order_number, z.name)
-            log.info("Request download url for {}", path)
+            zip_path = os.path.join(marine_id, order_number, z.name)
+            log.info("Request download url for {}", zip_path)
 
-            token = get_token(path)
+            token = get_token(zip_path)
 
             data["urls"].append(f"{host}/api/download/{token}")
 
