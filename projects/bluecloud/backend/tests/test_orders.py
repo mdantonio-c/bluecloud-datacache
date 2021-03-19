@@ -401,4 +401,4 @@ class TestApp(BaseTests):
         assert r.status_code == 204
 
         r = client.get(download_url)
-        assert r.status_code == 404
+        assert r.status_code == 400
