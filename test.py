@@ -1,5 +1,7 @@
 import json
 import random
+import sys
+import time
 from pathlib import Path
 
 import requests
@@ -15,7 +17,9 @@ faker = Faker()
 
 username = variables.get("AUTH_DEFAULT_USERNAME")
 password = variables.get("AUTH_DEFAULT_PASSWORD")
+
 host = "http://localhost:8080"
+# host = "https://data-dev.bluecloud.cineca.it"
 r = requests.post(
     f"{host}/auth/login", data={"username": username, "password": password}
 )
@@ -25,18 +29,25 @@ headers = {"Authorization": f"Bearer {token}"}
 rand = random.SystemRandom()
 
 marine_ids = [
-    "my_marineid_1",
-    "my_marineid_2",
-    "my_marineid_3",
-    "my_marineid_4",
-    "my_marineid_5",
+    "mattia",
 ]
 
-marine_ids = ["my_only_marine_id"]
+marine_id = rand.choice(marine_ids)
+order_number = faker.pystr()
+
+
+def print_response_or_exit(response: requests.Response):
+    log.info(response.json())
+
+    if response.status_code >= 300:
+        log.error("Status code = {}", response.status_code)
+        sys.exit(1)
+    log.info("Status code = {}", response.status_code)
+
 
 data = {
-    "marine_id": rand.choice(marine_ids),
-    "order_number": faker.pystr(),
+    "marine_id": marine_id,
+    "order_number": order_number,
     "request_id": faker.pystr(),
     "downloads": json.dumps(
         [
@@ -56,11 +67,18 @@ data = {
 }
 resp = requests.post(f"{host}/api/order", headers=headers, data=data)
 
-if resp.status_code >= 300:
-    log.error("Status code = {}", resp.status_code)
-else:
-    log.info("Status code = {}", resp.status_code)
+print_response_or_exit(resp)
 
-log.info(resp.json())
+time.sleep(5)
+
+resp = requests.get(f"{host}/api/download/{marine_id}/{order_number}", headers=headers)
+
+print_response_or_exit(resp)
+
+url = resp.json()["urls"][0]
+
+log.info("Download url = {}", url)
+
+resp = requests.get(url)
 
 requests.get(f"{host}/auth/logout", headers=headers)

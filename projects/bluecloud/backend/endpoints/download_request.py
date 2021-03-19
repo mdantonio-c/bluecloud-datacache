@@ -1,7 +1,10 @@
+import os
 from pathlib import Path
 from typing import Dict, List
 
+from bluecloud.endpoints import get_token
 from restapi import decorators
+from restapi.config import get_backend_url
 from restapi.exceptions import NotFound
 from restapi.models import Schema, fields
 from restapi.rest.definition import EndpointResource, Response
@@ -31,9 +34,18 @@ class DownloadRequest(EndpointResource):
                 f"Order {order_number} does not exists for marine id {marine_id}"
             )
 
-        # invalidate previously created urls for this order
-
-        # create one or more urls and get back as response
-
+        # Create one or more urls and get back as response
+        # Previously created urls for this order will be invalidated
         data: Dict[str, List[str]] = {"urls": []}
+        host = get_backend_url()
+
+        for z in path.glob("*.zip"):
+
+            path = os.path.join(marine_id, order_number, z.name)
+            log.info("Request download url for {}", path)
+
+            token = get_token(path)
+
+            data["urls"].append(f"{host}/api/download/{token}")
+
         return self.response(data)
