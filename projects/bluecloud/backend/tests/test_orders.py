@@ -318,6 +318,7 @@ class TestApp(BaseTests):
         r = client.get(f"{API_URI}/download/invalid/{order_number}", headers=headers)
         assert r.status_code == 404
 
+        # Request download links:
         r = client.get(
             f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
         )
@@ -327,10 +328,24 @@ class TestApp(BaseTests):
         assert "urls" in response
         assert isinstance(response["urls"], list)
 
-        # This is because it is not implemented yet
-        assert len(response["urls"]) == 0
+        assert len(response["urls"]) == 1
 
-        # Request download links:
+        download_url = response["urls"][0]
+        # http:// or https://
+        assert download_url.startswith("http")
+        assert "/api/download/" in download_url
+
+        r = client.get(f"{API_URI}/download/invalidtoken")
+        assert r.status_code == 400
+
+        r = client.get(download_url)
+        assert r.status_code == 200
+
+        # request a new token
+        # url should be no longer available
+
+        # test the new url => should be valid
+        # delete the order => token should be valid but 400 is expected
 
     def test_order_deletion(self, client: FlaskClient, faker: Faker) -> None:
 
