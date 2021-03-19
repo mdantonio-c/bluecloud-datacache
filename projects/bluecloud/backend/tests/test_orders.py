@@ -20,13 +20,12 @@ def download_and_verify_zip(
     r = client.get(f"{API_URI}/download/invalidtoken")
     assert r.status_code == 400
 
-    r = client.get(download_url, stream=True)
+    r = client.get(download_url)
     assert r.status_code == 200
+
     local_filename = f"{faker.pystr()}.zip"
     with open(local_filename, "wb+") as f:
-        for chunk in r.iter_content(chunk_size=1024):
-            if chunk:  # filter out keep-alive new chunks
-                f.write(chunk)
+        f.write(r.data)
 
     try:
         with zipfile.ZipFile(local_filename, "r") as myzip:
@@ -34,7 +33,7 @@ def download_and_verify_zip(
             assert errors is None
 
     except zipfile.BadZipFile as e:  # pragma: no cover
-        pytest.fail(e)
+        pytest.fail(str(e))
 
 
 class TestApp(BaseTests):
