@@ -27,7 +27,6 @@ class DownloadRequest(EndpointResource):
     def get(self, marine_id: str, order_number: str) -> Response:
 
         path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
-        log.info("Create a new order in {}", path)
 
         if not path.exists():
             raise NotFound(

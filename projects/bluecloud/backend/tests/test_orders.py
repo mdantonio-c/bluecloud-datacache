@@ -51,7 +51,11 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order")
         assert r.status_code == 401
 
+        # This url is not defined
         r = client.delete(f"{API_URI}/order/invalid")
+        assert r.status_code == 404
+
+        r = client.delete(f"{API_URI}/order/invalid/invalid")
         assert r.status_code == 401
 
     def test_order_creation(self, client: FlaskClient, faker: Faker) -> None:
@@ -370,7 +374,31 @@ class TestApp(BaseTests):
     def test_order_deletion(self, client: FlaskClient, faker: Faker) -> None:
 
         headers, _ = self.do_login(client, None, None)
+        marine_id = self.get("marine_id")
+        order_number = self.get("order_number")
 
-        # Not implemented yet
-        r = client.delete(f"{API_URI}/order/invalid", headers=headers)
+        r = client.delete(f"{API_URI}/order/invalid/invalid", headers=headers)
+        assert r.status_code == 404
+
+        r = client.get(
+            f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
+        )
+        assert r.status_code == 200
+
+        response = self.get_content(r)
+        assert "urls" in response
+        assert isinstance(response["urls"], list)
+
+        assert len(response["urls"]) == 1
+
+        download_url = response["urls"][0]
+        r = client.get(download_url)
+        assert r.status_code == 200
+
+        r = client.delete(
+            f"{API_URI}/order/{marine_id}/{order_number}", headers=headers
+        )
         assert r.status_code == 204
+
+        r = client.get(download_url)
+        assert r.status_code == 404

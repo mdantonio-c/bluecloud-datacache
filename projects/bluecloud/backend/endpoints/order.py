@@ -4,7 +4,7 @@ from typing import List
 from bluecloud.endpoints.schemas import DownloadType, OrderInputSchema
 from restapi import decorators
 from restapi.connectors import celery
-from restapi.exceptions import Conflict
+from restapi.exceptions import Conflict, NotFound
 from restapi.models import Schema, fields
 from restapi.rest.definition import EndpointResource, Response
 from restapi.services.uploader import Uploader
@@ -49,8 +49,6 @@ class Order(EndpointResource):
 
         path.mkdir()
 
-        log.info("Launch a celery task to download urls in the marine_id folder")
-
         celery_ext = celery.get_instance()
         task = celery_ext.celery_app.send_task(
             "make_order", args=[request_id, marine_id, order_number, downloads]
@@ -60,12 +58,23 @@ class Order(EndpointResource):
 
     @decorators.auth.require()
     @decorators.endpoint(
-        path="/order/<uuid>",
+        path="/order/<marine_id>/<order_number>",
         summary="Delete an order",
         responses={"204": "Order successfully deleted"},
     )
-    def delete(self, uuid: str) -> Response:
+    def delete(self, marine_id: str, order_number: str) -> Response:
 
-        log.info("Order {} to be deleted", uuid)
+        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+
+        if not path.exists():
+            raise NotFound(
+                f"Order {order_number} does not exists for marine id {marine_id}"
+            )
+
+        log.info("Order to be deleted: {} on marineID {}", order_number, marine_id)
+
+        path.rmtree()
+
+        log.info("Order {} deleted", order_number)
 
         return self.empty_response()
