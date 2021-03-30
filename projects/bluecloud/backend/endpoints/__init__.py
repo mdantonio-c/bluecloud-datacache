@@ -43,8 +43,13 @@ def read_token(cypher: str) -> str:
     # This is marine_id/order_number
     zip_path = os.path.dirname(zip_filepath)
 
+    # marine_id and order_number split by /
+    marine_id, order_number = zip_path.split("/")
+
     # This is /uploads/marine_id/order_number
-    abs_zip_path = Uploader.absolute_upload_file(zip_path)
+    abs_zip_path = Uploader.absolute_upload_file(
+        order_number, subfolder=Path(marine_id)
+    )
 
     expected_seed = get_seed(abs_zip_path)
 
