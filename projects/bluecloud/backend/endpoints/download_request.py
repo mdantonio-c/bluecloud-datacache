@@ -30,7 +30,7 @@ class DownloadRequest(EndpointResource):
 
         if not path.exists():
             raise NotFound(
-                f"Order {order_number} does not exists for marine id {marine_id}"
+                f"Order {order_number} does not exist for marine id {marine_id}"
             )
 
         # Create one or more urls and get back as response
@@ -40,10 +40,10 @@ class DownloadRequest(EndpointResource):
 
         for z in path.glob("*.zip"):
 
-            zip_path = os.path.join(marine_id, order_number, z.name)
-            log.info("Request download url for {}", zip_path)
+            zip_path = os.path.join(marine_id, order_number)
+            log.info("Request download url for {}/{}", zip_path, z.name)
 
-            token = get_token(zip_path)
+            token = get_token(zip_path, z.name)
 
             data["urls"].append(f"{host}/api/download/{token}")
 

@@ -71,7 +71,7 @@ class Order(EndpointResource):
 
         if not path.exists():
             raise NotFound(
-                f"Order {order_number} does not exists for marine id {marine_id}"
+                f"Order {order_number} does not exist for marine id {marine_id}"
             )
 
         log.info("Order to be deleted: {} on marineID {}", order_number, marine_id)
