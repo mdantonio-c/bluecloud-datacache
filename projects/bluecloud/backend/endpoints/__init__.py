@@ -8,8 +8,12 @@ from restapi.services.authentication import import_secret
 from restapi.services.uploader import Uploader
 
 
+def get_seed_path(abs_zip_path: Path) -> Path:
+    return abs_zip_path.joinpath(".seed")
+
+
 def get_seed(abs_zip_path: Path) -> str:
-    return import_secret(abs_zip_path.joinpath(".seed"))[0:12].decode()
+    return import_secret(get_seed_path(abs_zip_path))[0:12].decode()
 
 
 def get_secret() -> bytes:

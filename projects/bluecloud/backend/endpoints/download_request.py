@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import Dict, List
 
-from bluecloud.endpoints import get_token
+from bluecloud.endpoints import get_seed_path, get_token
 from restapi import decorators
 from restapi.config import get_backend_url
 from restapi.exceptions import NotFound
@@ -38,12 +38,20 @@ class DownloadRequest(EndpointResource):
         data: Dict[str, List[str]] = {"urls": []}
         host = get_backend_url()
 
+        abs_zippath = Uploader.absolute_upload_file(
+            order_number, subfolder=Path(marine_id)
+        )
+
+        seed_path = get_seed_path(abs_zippath)
+
+        if seed_path.exists():
+            log.info("Invalidating previous download URLs")
+            seed_path.unlink()
+
         for z in path.glob("*.zip"):
 
             zip_path = os.path.join(marine_id, order_number, z.name)
-            abs_zippath = Uploader.absolute_upload_file(
-                order_number, subfolder=Path(marine_id)
-            )
+
             log.info("Request download url for {}", zip_path)
 
             token = get_token(abs_zippath, zip_path)
