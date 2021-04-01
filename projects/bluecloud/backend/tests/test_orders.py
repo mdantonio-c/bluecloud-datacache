@@ -372,11 +372,29 @@ class TestApp(BaseTests):
 
         download_and_verify_zip(client, faker, download_url)
 
-        # request a new token
-        # url should be no longer available
+        # Request a new download link:
+        r = client.get(
+            f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
+        )
+        assert r.status_code == 200
 
-        # test the new url => should be valid
-        # delete the order => token should be valid but 400 is expected
+        response = self.get_content(r)
+        assert "urls" in response
+        assert isinstance(response["urls"], list)
+
+        assert len(response["urls"]) == 1
+
+        new_download_url = response["urls"][0]
+
+        download_and_verify_zip(client, faker, new_download_url)
+
+        assert new_download_url != download_url
+
+        r = client.get(f"{API_URI}/download/{new_download_url}")
+        assert r.status_code == 200
+
+        r = client.get(f"{API_URI}/download/{download_url}")
+        assert r.status_code == 400
 
     def test_order_deletion(self, client: FlaskClient, faker: Faker) -> None:
 
