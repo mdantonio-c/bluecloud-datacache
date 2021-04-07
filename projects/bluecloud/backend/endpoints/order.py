@@ -43,14 +43,12 @@ class Order(EndpointResource):
     ) -> Response:
 
         path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
-        log.info("Create a new order in {}", path)
 
         if path.exists():
-            raise Conflict(
-                f"Order {order_number} already exists for marine id {marine_id}"
-            )
-
-        path.mkdir()
+            log.info("Merging order with previous data in {}", path)
+        else:
+            log.info("Create a new order in {}", path)
+            path.mkdir()
 
         celery_ext = celery.get_instance()
         task = celery_ext.celery_app.send_task(

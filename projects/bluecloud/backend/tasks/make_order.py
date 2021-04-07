@@ -159,6 +159,7 @@ def make_order(
 
     log.info("Task executed!")
 
+    # uhm... last execution override previous response... is this ok?
     log_path = logs.joinpath("response.json")
     with open(log_path, "w+") as log_file:
         log_file.write(json.dumps(response))
