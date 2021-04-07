@@ -27,7 +27,7 @@ jobs:
 
       - name: Run Pytest
         run: |
-          echo "      MARIS_EXTERNAL_API_SERVER: not-used-in-testing-mode" >> .projectrc
+          echo "\n      MARIS_EXTERNAL_API_SERVER: not-used-in-testing-mode" >> .projectrc
           cat .projectrc
           rapydo pull --quiet
           # Added just to be prepared if a custom build is added 
@@ -49,7 +49,7 @@ jobs:
 
       - name: Production mode
         run: |
-          echo "      MARIS_EXTERNAL_API_SERVER: not-used-in-testing-mode" >> .projectrc
+          echo "\n      MARIS_EXTERNAL_API_SERVER: not-used-in-testing-mode" >> .projectrc
           cat .projectrc
           rapydo remove --all
           rm -rf data/graphdata/*
