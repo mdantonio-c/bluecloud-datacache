@@ -3,12 +3,14 @@ import time
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional, TracebackType, Type, TypeVar
 
 import pytest
 from faker import Faker
 from restapi.services.uploader import Uploader
 from restapi.tests import API_URI, BaseTests, FlaskClient
+
+T = TypeVar("T", bound="TemporaryRemovePath")
 
 
 # This is a copy from submodules/do, not available in http-api
@@ -17,13 +19,20 @@ class TemporaryRemovePath:
         self.path = path.absolute()
         self.tmp_path = self.path.with_suffix(f"{path.suffix}.bak")
 
-    def __enter__(self):
+    def __enter__(self: T) -> T:
 
         self.path.rename(self.tmp_path)
         return self
 
-    def __exit__(self, _type, value, tb):
+    def __exit__(
+        self,
+        _type: Optional[Type[BaseException]],
+        value: Optional[BaseException],
+        tb: Optional[TracebackType],
+    ) -> bool:
         self.tmp_path.rename(self.path)
+        # return False if the exception is not handled, as in this case
+        return False
 
 
 def download_and_verify_zip(
