@@ -178,13 +178,11 @@ def make_order(
                 r.status_code,
                 FULL_URL,
             )
-            return False
         else:
             log.info(
                 "Called POST on external API (status: {}, uri: {})",
                 r.status_code,
                 FULL_URL,
             )
-            return True
 
     return "Task executed!"
