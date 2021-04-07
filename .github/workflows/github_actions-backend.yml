@@ -28,6 +28,8 @@ jobs:
       - name: Run Pytest
         run: |
 
+          rapydo --testing --project ${PROJECT} -e MARIS_EXTERNAL_API_SERVER=not-used-in-testing-mode init --force
+
           rapydo pull --quiet
           # Added just to be prepared if a custom build is added 
           rapydo build
@@ -48,6 +50,8 @@ jobs:
 
       - name: Production mode
         run: |
+
+          rapydo --testing --project ${PROJECT} -e MARIS_EXTERNAL_API_SERVER=not-used-in-testing-mode init --force
           rapydo remove --all
           rm -rf data/graphdata/*
           rapydo --prod -e MARIS_EXTERNAL_API_SERVER=not-used-in-testing-mode init --force
