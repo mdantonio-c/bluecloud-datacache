@@ -276,6 +276,9 @@ class TestApp(BaseTests):
         assert logs.exists()
         assert zip_file.exists()
 
+        zip_size = zip_file.stat().st_size
+        assert zip_size > 0
+
         assert logs.joinpath("response.json").exists()
 
         assert cache.joinpath(filename_1).exists()
@@ -297,11 +300,67 @@ class TestApp(BaseTests):
             assert response["errors"][0]["url"] == download_url3
             assert response["errors"][0]["error_number"] == "001"
 
-        # The order already exists
+        # Send a second order to be merged:
+        new_request_id = faker.pystr()
+        filename_4 = faker.file_name()
+        order_line4 = faker.pystr()
+        download_url4 = "https://github.com/rapydo/do/archive/v1.0.zip"
+
+        data = {
+            "debug": True,
+            "request_id": new_request_id,
+            "marine_id": marine_id,
+            "order_number": order_number,
+            "downloads": json.dumps(
+                [
+                    {
+                        "url": download_url4,
+                        "filename": filename_4,
+                        "order_line": order_line4,
+                    },
+                ]
+            ),
+        }
+
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
-        assert r.status_code == 409
-        error = f"Order {order_number} already exists for marine id {marine_id}"
-        assert self.get_content(r) == error
+        assert r.status_code == 200
+        response = self.get_content(r)
+        assert "request_id" in response
+        assert "datetime" in response
+
+        # Not the best... but enough for now
+        time.sleep(20)
+
+        # Now the order should be completed, let's verify the result:
+
+        assert path.exists()
+        assert cache.exists()
+        assert logs.exists()
+        assert zip_file.exists()
+
+        new_zip_size = zip_file.stat().st_size
+        assert new_zip_size > 0
+        assert new_zip_size > zip_size
+
+        assert logs.joinpath("response.json").exists()
+
+        assert cache.joinpath(filename_1).exists()
+        assert cache.joinpath(filename_2).exists()
+        assert not cache.joinpath(filename_3).exists()
+        assert cache.joinpath(filename_4).exists()
+
+        # response.json file is overwritten
+        with open(logs.joinpath("response.json")) as json_file:
+            response = json.load(json_file)
+
+            assert response is not None
+            assert "request_id" in response
+            assert "order_number" in response
+            assert "errors" in response
+            assert response["request_id"] == new_request_id
+            assert response["order_number"] == order_number
+            assert isinstance(response["errors"], list)
+            assert len(response["errors"]) == 0
 
     def test_download_endpoint_definition(self, client: FlaskClient) -> None:
 

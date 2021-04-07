@@ -73,6 +73,28 @@ print_response_or_exit(resp)
 
 time.sleep(5)
 
+# Send a second other to be merged
+data = {
+    "marine_id": marine_id,
+    "order_number": order_number,
+    "request_id": faker.pystr(),
+    "downloads": json.dumps(
+        [
+            {
+                "url": "https://github.com/rapydo/do/archive/v1.0.zip",
+                "filename": faker.file_name(),
+                "order_line": faker.pystr(),
+            }
+        ]
+    ),
+    "debug": True,
+}
+resp = requests.post(f"{host}/api/order", headers=headers, data=data)
+
+print_response_or_exit(resp)
+
+time.sleep(5)
+
 resp = requests.get(f"{host}/api/download/{marine_id}/{order_number}", headers=headers)
 
 print_response_or_exit(resp)
