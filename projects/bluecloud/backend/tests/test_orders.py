@@ -9,6 +9,7 @@ import pytest
 from faker import Faker
 from restapi.services.uploader import Uploader
 from restapi.tests import API_URI, BaseTests, FlaskClient
+from tests import TemporaryRemovePath
 
 
 def download_and_verify_zip(
@@ -482,6 +483,14 @@ class TestApp(BaseTests):
         path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
 
         assert path.exists()
+
+        # Test error if the zip file does not exist (but the order still exist...
+        # so this is an error condition that should never occur)
+        with TemporaryRemovePath(path.joinpath("output.zip")):
+            r = client.get(download_url)
+            assert r.status_code == 400
+        r = client.get(download_url)
+        assert r.status_code == 200
 
         r = client.delete(
             f"{API_URI}/order/{marine_id}/{order_number}", headers=headers
