@@ -3,7 +3,8 @@ import time
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, TracebackType, Type, TypeVar
+from types import TracebackType
+from typing import Any, Dict, Optional, Type, TypeVar
 
 import pytest
 from faker import Faker
@@ -31,8 +32,11 @@ class TemporaryRemovePath:
         tb: Optional[TracebackType],
     ) -> bool:
         self.tmp_path.rename(self.path)
-        # return False if the exception is not handled, as in this case
-        return False
+        # return False if the exception is not handled:
+        # -> return True if the exception is None (nothing to be handled)
+        # -> return False if the exception is not None (because it is not handled here)
+        # always return False is not accepted by mypy...
+        return _type is None
 
 
 def download_and_verify_zip(
