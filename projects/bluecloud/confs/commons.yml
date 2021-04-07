@@ -4,7 +4,11 @@ services:
   backend:
     volumes:
       - ${VANILLA_DIR}/data/uploads:/uploads
+    environment:
+      MARIS_EXTERNAL_API_SERVER: ${MARIS_EXTERNAL_API_SERVER}
 
   celery:
     volumes:
       - ${VANILLA_DIR}/data/uploads:/uploads
+    environment:
+      MARIS_EXTERNAL_API_SERVER: ${MARIS_EXTERNAL_API_SERVER}

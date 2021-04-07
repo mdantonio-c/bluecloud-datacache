@@ -50,7 +50,7 @@ jobs:
         run: |
           rapydo remove --all
           rm -rf data/graphdata/*
-          rapydo --prod init --force
+          rapydo --prod -e MARIS_EXTERNAL_API_SERVER=not-used-in-testing-mode init --force
           rapydo pull --quiet
           rapydo ssl --volatile
           rapydo start

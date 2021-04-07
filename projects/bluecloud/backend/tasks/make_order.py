@@ -7,6 +7,7 @@ import requests
 from bluecloud.endpoints.schemas import DownloadType
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from restapi.connectors.celery import CeleryExt
+from restapi.env import Env
 from restapi.exceptions import NotFound
 from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
@@ -49,6 +50,7 @@ def make_order(
     marine_id: str,
     order_number: str,
     downloads: List[DownloadType],
+    debug: bool,
 ) -> str:
 
     path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
@@ -160,5 +162,29 @@ def make_order(
     log_path = logs.joinpath("response.json")
     with open(log_path, "w+") as log_file:
         log_file.write(json.dumps(response))
+
+    EXT_URL = Env.get("MARIS_EXTERNAL_API_SERVER")
+    ACTION = "download-datafiles-ready"
+    FULL_URL = f"{EXT_URL}/{ACTION}"
+
+    if debug:
+        log.info("Debug mode is enabled, response not sent to {}", FULL_URL)
+    else:  # pragma: no cover
+        r = requests.post(FULL_URL, json=response)
+
+        if r.status_code != 200:
+            log.error(
+                "Failed to call external API (status: {}, uri: {})",
+                r.status_code,
+                FULL_URL,
+            )
+            return False
+        else:
+            log.info(
+                "Called POST on external API (status: {}, uri: {})",
+                r.status_code,
+                FULL_URL,
+            )
+            return True
 
     return "Task executed!"

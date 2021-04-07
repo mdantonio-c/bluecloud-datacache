@@ -54,7 +54,7 @@ class Order(EndpointResource):
 
         celery_ext = celery.get_instance()
         task = celery_ext.celery_app.send_task(
-            "make_order", args=[request_id, marine_id, order_number, downloads]
+            "make_order", args=[request_id, marine_id, order_number, downloads, debug]
         )
 
         return self.response({"request_id": task.id, "datetime": datetime.now()})
