@@ -7,6 +7,8 @@ project:
 
 variables:
   env:
+    MARIS_EXTERNAL_API_SERVER: "**PLACEHOLDER**"
+
     FRONTEND_FRAMEWORK: nofrontend
     CORS_ALLOWED_ORIGIN: "*"
     AUTH_SERVICE: sqlalchemy
