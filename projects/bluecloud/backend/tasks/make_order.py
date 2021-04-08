@@ -96,6 +96,18 @@ def make_order(
                 headers=DOWNLOAD_HEADERS,
             )
 
+            if r.status_code != 200:
+                log.error("Invalid response from {}: {}", download_url, r.status_code)
+                response["errors"].append(
+                    {
+                        "url": download_url,
+                        "order_line": order_line,
+                        "error_number": ErrorCodes.INVALID_RESPONSE[0],
+                    }
+                )
+
+                continue
+
             local_path = cache.joinpath(filename)
 
             with open(local_path, "wb") as downloaded_file:
@@ -135,18 +147,6 @@ def make_order(
             )
             continue
 
-        if r.status_code != 200:
-            log.error("Invalid response: {}", r.status_code)
-            response["errors"].append(
-                {
-                    "url": download_url,
-                    "order_line": order_line,
-                    "error_number": ErrorCodes.INVALID_RESPONSE[0],
-                }
-            )
-
-            continue
-
     log.info("Downloaded {} files", downloaded)
 
     if downloaded > 0:
@@ -157,9 +157,9 @@ def make_order(
 
     # split the zip
 
-    log.info("Task executed!")
+    log.info("Task executed on {}", path)
 
-    # uhm... last execution override previous response... is this ok?
+    # uhm... last execution override previous response... is this
     log_path = logs.joinpath("response.json")
     with open(log_path, "w+") as log_file:
         log_file.write(json.dumps(response))
