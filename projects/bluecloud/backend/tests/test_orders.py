@@ -390,6 +390,69 @@ class TestApp(BaseTests):
             assert isinstance(response["errors"], list)
             assert len(response["errors"]) == 0
 
+        # This is to test concurrency (not really handled yet)
+        marine_id = faker.pystr()
+        order_number = faker.pystr()
+
+        data = {
+            "debug": True,
+            "request_id": faker.pystr(),
+            "marine_id": marine_id,
+            "order_number": order_number,
+            "downloads": json.dumps(
+                [
+                    {
+                        "url": download_url1,
+                        "filename": faker.file_name(),
+                        "order_line": faker.pystr(),
+                    },
+                    {
+                        "url": download_url2,
+                        "filename": faker.file_name(),
+                        "order_line": faker.pystr(),
+                    },
+                ]
+            ),
+        }
+
+        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        assert r.status_code == 202
+
+        data = {
+            "debug": True,
+            "request_id": faker.pystr(),
+            "marine_id": marine_id,
+            "order_number": order_number,
+            "downloads": json.dumps(
+                [
+                    {
+                        "url": download_url4,
+                        "filename": faker.file_name(),
+                        "order_line": faker.pystr(),
+                    },
+                ]
+            ),
+        }
+
+        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        assert r.status_code == 202
+
+        # Not the best... but enough for now
+        time.sleep(20)
+
+        # This order is created by merging exactly the same file of the first order
+        # but not sequentially, i.e. with concurrent jobs
+        # Expected zip size is exactly the size of the first
+        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+
+        assert path.exists()
+        zip_file = path.joinpath("output.zip")
+        assert zip_file.exists()
+
+        concurrent_zip_size = zip_file.stat().st_size
+        assert concurrent_zip_size > 0
+        assert concurrent_zip_size > new_zip_size
+
     def test_download_endpoint_definition(self, client: FlaskClient) -> None:
 
         r = client.get(f"{API_URI}/download")
