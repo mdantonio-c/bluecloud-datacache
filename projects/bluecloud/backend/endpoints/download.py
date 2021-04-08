@@ -12,7 +12,9 @@ class Download(EndpointResource):
     labels = ["download"]
 
     @decorators.endpoint(
-        path="/download/<token>", summary="Download a file", responses={"200": "..."}
+        path="/download/<token>",
+        summary="Download a file",
+        responses={200: "Send the requested file as a stream of data"},
     )
     def get(self, token: str) -> Response:
 

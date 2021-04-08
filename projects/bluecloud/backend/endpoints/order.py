@@ -6,7 +6,7 @@ from typing import List
 from bluecloud.endpoints.schemas import DownloadType, OrderInputSchema
 from restapi import decorators
 from restapi.connectors import celery
-from restapi.exceptions import Conflict, NotFound
+from restapi.exceptions import NotFound
 from restapi.models import Schema, fields
 from restapi.rest.definition import EndpointResource, Response
 from restapi.services.uploader import Uploader
@@ -28,10 +28,7 @@ class Order(EndpointResource):
     @decorators.endpoint(
         path="/order",
         summary="Create a new order by providing a list of URLs",
-        responses={
-            202: "Order creation accepted. Operation ID is returned",
-            409: "Order already exists for the given marine id",
-        },
+        responses={202: "Order creation accepted. Operation ID is returned"},
     )
     def post(
         self,
@@ -55,13 +52,15 @@ class Order(EndpointResource):
             "make_order", args=[request_id, marine_id, order_number, downloads, debug]
         )
 
-        return self.response({"request_id": task.id, "datetime": datetime.now()})
+        return self.response(
+            {"request_id": task.id, "datetime": datetime.now()}, code=202
+        )
 
     @decorators.auth.require()
     @decorators.endpoint(
         path="/order/<marine_id>/<order_number>",
         summary="Delete an order",
-        responses={"204": "Order successfully deleted"},
+        responses={204: "Order successfully deleted"},
     )
     def delete(self, marine_id: str, order_number: str) -> Response:
 

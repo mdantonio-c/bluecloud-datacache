@@ -22,7 +22,10 @@ class DownloadRequest(EndpointResource):
     @decorators.endpoint(
         path="/download/<marine_id>/<order_number>",
         summary="Request the download url(s) for a specific order",
-        responses={"200": "Download URL(s) returned"},
+        responses={
+            200: "Download URL(s) returned",
+            404: "The requested order cannot be found",
+        },
     )
     def get(self, marine_id: str, order_number: str) -> Response:
 
