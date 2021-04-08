@@ -278,7 +278,7 @@ class TestApp(BaseTests):
             ),
         }
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
-        assert r.status_code == 200
+        assert r.status_code == 202
         response = self.get_content(r)
         assert "request_id" in response
         assert "datetime" in response
@@ -351,7 +351,7 @@ class TestApp(BaseTests):
         }
 
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
-        assert r.status_code == 200
+        assert r.status_code == 202
         response = self.get_content(r)
         assert "request_id" in response
         assert "datetime" in response
