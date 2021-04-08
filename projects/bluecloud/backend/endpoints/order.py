@@ -23,7 +23,7 @@ class Order(EndpointResource):
     labels = ["orders"]
 
     @decorators.auth.require()
-    @decorators.marshal_with(TaskID, code=200)
+    @decorators.marshal_with(TaskID, code=202)
     @decorators.use_kwargs(OrderInputSchema)
     @decorators.endpoint(
         path="/order",
