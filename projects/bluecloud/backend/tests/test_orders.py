@@ -287,6 +287,17 @@ class TestApp(BaseTests):
         now = datetime.now()
         assert (now - dt).total_seconds() < 10
 
+        # The order is still empty => the download request will return an empty list
+        r = client.get(
+            f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
+        )
+        assert r.status_code == 200
+
+        response = self.get_content(r)
+        assert "urls" in response
+        assert isinstance(response["urls"], list)
+        assert len(response["urls"]) == 0
+
         # Not the best... but enough for now
         time.sleep(20)
 
