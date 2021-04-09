@@ -309,14 +309,20 @@ class TestApp(BaseTests):
 
         cache = path.joinpath("cache")
         logs = path.joinpath("logs")
+        zip_split = path.joinpath("zip_split")
         zip_file = path.joinpath("output.zip")
 
         assert cache.exists()
         assert logs.exists()
+        assert zip_split.exists()
         assert zip_file.exists()
 
         zip_size = zip_file.stat().st_size
         assert zip_size > 0
+
+        assert zip_split.joinpath("output1.zip").exists()
+        assert zip_split.joinpath("output2.zip").exists()
+        assert not zip_split.joinpath("output3.zip").exists()
 
         assert logs.joinpath("response.json").exists()
 
