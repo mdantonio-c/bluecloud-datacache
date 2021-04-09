@@ -1,10 +1,13 @@
 import json
+import re
 import shutil
 from pathlib import Path
 from typing import List, TypedDict
 
 import requests
 from bluecloud.endpoints.schemas import DownloadType
+from plumbum import local
+from plumbum.commands.processes import ProcessExecutionError
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from restapi.connectors.celery import CeleryExt
 from restapi.env import Env
@@ -157,84 +160,49 @@ def make_order(
 
         MAX_ZIP_SIZE = Env.get("MAX_ZIP_SIZE")
 
-        # f = f"{zip_file}.zip"
-        log.critical("Zip split not implemented yet, max zip size = {}", MAX_ZIP_SIZE)
+        z = zip_file.with_suffix(".zip")
+        size = z.stat().st_size
+        if size > MAX_ZIP_SIZE:
 
-        # This is the implementation from SDC:
+            log.warning(
+                "Zip too large, splitting {} (size {}, maxsize {})",
+                z,
+                size,
+                MAX_ZIP_SIZE,
+            )
 
-        # if os.path.getsize(str(zip_local_file)) > MAX_ZIP_SIZE:
-        #     log.warning("Zip too large, splitting {}", zip_local_file)
+            # Create a sub folder for split files. If already exists,
+            # remove it before to start from a clean environment
+            split_path = path.joinpath("zip_split")
 
-        #     # Create a sub folder for split files. If already exists,
-        #     # remove it before to start from a clean environment
-        #     split_path = path.join(local_dir, "unrestricted_zip_split")
-        #     # split_path is an object
-        #     rmtree(str(split_path), ignore_errors=True)
-        #     # path create requires a path object
-        #     path.create(split_path, directory=True, force=True)
-        #     # path object is no longer required, cast to string
-        #     split_path = str(split_path)
+            if split_path.exists():
+                shutil.rmtree(split_path)
 
-        #     # Execute the split of the whole zip
-        #     bash = BashCommands()
-        #     split_params = [
-        #         "-n",
-        #         MAX_ZIP_SIZE,
-        #         "-b",
-        #         split_path,
-        #         zip_local_file,
-        #     ]
-        #     try:
-        #         out = bash.execute_command("/usr/bin/zipsplit", split_params)
-        #     except ProcessExecutionError as e:
+            split_path.mkdir(exist_ok=True)
 
-        #         if "Entry is larger than max split size" in e.stdout:
-        #             reg = r"Entry too big to split, read, or write \((.*)\)"
-        #             extra = None
-        #             m = re.search(reg, e.stdout)
-        #             if m:
-        #                 extra = m.group(1)
-        #             return notify_error(
-        #                 ErrorCodes.ZIP_SPLIT_ENTRY_TOO_LARGE,
-        #                 myjson,
-        #                 backdoor,
-        #                 self,
-        #                 extra=extra,
-        #             )
-        #         else:
-        #             log.error(e.stdout)
+            # Execute the split of the zip
+            split_params = [
+                "-n",
+                MAX_ZIP_SIZE,
+                "-b",
+                split_path,
+                z,
+            ]
+            try:
+                zipsplit = local["/usr/bin/zipsplit"]
+                zipsplit(split_params)
+            except ProcessExecutionError as e:
 
-        #         return notify_error(
-        #             ErrorCodes.ZIP_SPLIT_ERROR,
-        #             myjson,
-        #             backdoor,
-        #             self,
-        #             extra=str(zip_local_file),
-        #         )
-
-        #     regexp = "^.*[^0-9]([0-9]+).zip$"
-        #     zip_files = os.listdir(split_path)
-        #     base_filename, _ = os.path.splitext(zip_file_name)
-        #     for subzip_file in zip_files:
-        #         m = re.search(regexp, subzip_file)
-        #         if not m:
-        #             log.error(
-        #                 "Cannot extract index from zip name: {}", subzip_file,
-        #             )
-        #             return notify_error(
-        #                 ErrorCodes.INVALID_ZIP_SPLIT_OUTPUT,
-        #                 myjson,
-        #                 backdoor,
-        #                 self,
-        #                 extra=str(zip_local_file),
-        #             )
-        #         index = m.group(1).lstrip("0")
-        #         subzip_path = path.join(split_path, subzip_file)
-
-        #         subzip_ifile = path.append_compress_extension(
-        #             f"{base_filename}{index}"
-        #         )
-        #         subzip_ipath = path.join(order_path, subzip_ifile)
+                if "Entry is larger than max split size" in e.stdout:
+                    reg = r"Entry too big to split, read, or write \((.*)\)"
+                    extra = None
+                    if m := re.search(reg, e.stdout):
+                        extra = m.group(1)
+                    # ErrorCodes.ZIP_SPLIT_ENTRY_TOO_LARGE
+                    log.error(extra)
+                else:
+                    # ErrorCodes.ZIP_SPLIT_ERROR
+                    log.error(e.stdout)
 
     log.info("Task executed on {}", path)
 
