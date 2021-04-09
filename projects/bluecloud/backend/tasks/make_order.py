@@ -158,7 +158,7 @@ def make_order(
         # expected "str"
         shutil.make_archive(base_name=str(zip_file), format="zip", root_dir=cache)
 
-        MAX_ZIP_SIZE = Env.get("MAX_ZIP_SIZE")
+        MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
 
         z = zip_file.with_suffix(".zip")
         size = z.stat().st_size
