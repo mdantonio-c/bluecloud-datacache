@@ -313,23 +313,21 @@ class TestApp(BaseTests):
         zip_file = path.joinpath("output.zip")
 
         assert cache.exists()
-        assert logs.exists()
-        assert zip_split.exists()
-        assert zip_file.exists()
-
-        zip_size = zip_file.stat().st_size
-        assert zip_size > 0
-
-        assert zip_split.joinpath("output1.zip").exists()
-        assert zip_split.joinpath("output2.zip").exists()
-        assert not zip_split.joinpath("output3.zip").exists()
-
-        assert logs.joinpath("response.json").exists()
-
         assert cache.joinpath(filename_1).exists()
         assert cache.joinpath(filename_2).exists()
         assert not cache.joinpath(filename_3).exists()
 
+        assert zip_file.exists()
+        zip_size = zip_file.stat().st_size
+        assert zip_size > 0
+
+        assert not zip_split.exists()
+        assert not zip_split.joinpath("output1.zip").exists()
+        assert not zip_split.joinpath("output2.zip").exists()
+        assert not zip_split.joinpath("output3.zip").exists()
+
+        assert logs.exists()
+        assert logs.joinpath("response.json").exists()
         with open(logs.joinpath("response.json")) as json_file:
             response = json.load(json_file)
 
@@ -383,17 +381,21 @@ class TestApp(BaseTests):
         assert logs.exists()
         assert zip_file.exists()
 
-        new_zip_size = zip_file.stat().st_size
-        assert new_zip_size > 0
-        assert new_zip_size > zip_size
-
-        assert logs.joinpath("response.json").exists()
-
         assert cache.joinpath(filename_1).exists()
         assert cache.joinpath(filename_2).exists()
         assert not cache.joinpath(filename_3).exists()
         assert cache.joinpath(filename_4).exists()
 
+        new_zip_size = zip_file.stat().st_size
+        assert new_zip_size > 0
+        assert new_zip_size > zip_size
+
+        assert zip_split.exists()
+        assert zip_split.joinpath("output1.zip").exists()
+        assert zip_split.joinpath("output2.zip").exists()
+        assert not zip_split.joinpath("output3.zip").exists()
+
+        assert logs.joinpath("response.json").exists()
         # response.json file is overwritten
         with open(logs.joinpath("response.json")) as json_file:
             response = json.load(json_file)
