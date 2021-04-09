@@ -29,7 +29,7 @@ jobs:
         run: |
           echo "" >> .projectrc
           echo "      MARIS_EXTERNAL_API_SERVER: not-used-in-testing-mode" >> .projectrc
-          echo "      MAX_ZIP_SIZE: 1048576" >> .projectrc
+          echo "      MAX_ZIP_SIZE: 204800" >> .projectrc
           rapydo pull --quiet
           # Added just to be prepared if a custom build is added 
           rapydo build
@@ -55,7 +55,7 @@ jobs:
           rapydo --prod init --force
           echo "" >> .projectrc
           echo "      MARIS_EXTERNAL_API_SERVER: not-used-in-testing-mode" >> .projectrc
-          echo "      MAX_ZIP_SIZE: 1048576" >> .projectrc
+          echo "      MAX_ZIP_SIZE: 204800" >> .projectrc
 
           rapydo pull --quiet
           rapydo ssl --volatile
