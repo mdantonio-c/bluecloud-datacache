@@ -203,6 +203,13 @@ def make_order(
                 else:
                     # ErrorCodes.ZIP_SPLIT_ERROR
                     log.error(e.stdout)
+        else:
+            log.critical(
+                "DEBUG CODE: {}, size {}, maxsize {}",
+                z,
+                size,
+                MAX_ZIP_SIZE,
+            )
 
     log.info("Task executed on {}", path)
 
