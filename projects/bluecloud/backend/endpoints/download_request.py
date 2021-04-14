@@ -41,11 +41,7 @@ class DownloadRequest(EndpointResource):
         data: Dict[str, List[str]] = {"urls": []}
         host = get_backend_url()
 
-        abs_zippath = Uploader.absolute_upload_file(
-            order_number, subfolder=Path(marine_id)
-        )
-
-        seed_path = get_seed_path(abs_zippath)
+        seed_path = get_seed_path(path)
 
         if seed_path.exists():
             log.info("Invalidating previous download URLs")
@@ -53,13 +49,13 @@ class DownloadRequest(EndpointResource):
 
         for z in path.glob("*.zip"):
 
-            zip_path = os.path.join(marine_id, order_number, z.name)
+            zip_path = path.join(marine_id, order_number, z.name)
 
-            filesize = zip_path.stat().st_size
+            filesize = path.joinpath(z.name).stat().st_size
 
             log.info("Request download url for {} [size={}]", zip_path, filesize)
 
-            token = get_token(abs_zippath, zip_path)
+            token = get_token(path, zip_path)
 
             data["urls"].append(f"{host}/api/download/{token}")
 
