@@ -8,25 +8,25 @@ from restapi.services.authentication import import_secret
 from restapi.services.uploader import Uploader
 
 
-def get_seed_path(abs_zip_path: Path) -> Path:
-    return abs_zip_path.joinpath(".seed")
+def get_seed_path(abs_order_path: Path) -> Path:
+    return abs_order_path.joinpath(".seed")
 
 
-def get_seed(abs_zip_path: Path) -> str:
-    return import_secret(get_seed_path(abs_zip_path))[0:12].decode()
+def get_seed(abs_order_path: Path) -> str:
+    return import_secret(get_seed_path(abs_order_path))[0:12].decode()
 
 
 def get_secret() -> bytes:
     return import_secret(APP_SECRETS.joinpath("order_secrets.key"))
 
 
-def get_token(abs_zip_path: Path, zip_path: str) -> str:
+def get_token(abs_order_path: Path, relative_zip_path: str) -> str:
 
     secret = get_secret()
     fernet = Fernet(secret)
 
-    seed = get_seed(abs_zip_path)
-    plain = f"{seed}:{zip_path}"
+    seed = get_seed(abs_order_path)
+    plain = f"{seed}:{relative_zip_path}"
 
     return fernet.encrypt(plain.encode()).decode()
 
