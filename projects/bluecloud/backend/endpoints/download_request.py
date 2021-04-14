@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from bluecloud.endpoints import get_seed_path, get_token
 from restapi import decorators
@@ -43,7 +43,7 @@ class DownloadRequest(EndpointResource):
 
         # Create one or more urls and get back as response
         # Previously created urls for this order will be invalidated
-        data: Dict[str, List[str]] = {"urls": []}
+        data: Dict[str, List[Dict[str, Union[str, int]]]] = {"urls": []}
         host = get_backend_url()
 
         seed_path = get_seed_path(path)
