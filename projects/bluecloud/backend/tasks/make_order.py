@@ -1,6 +1,7 @@
 import json
 import re
 import shutil
+import time
 from pathlib import Path
 from typing import List, TypedDict
 
@@ -66,6 +67,7 @@ def make_order(
     zip_file = path.joinpath("output")
     cache = path.joinpath("cache")
     logs = path.joinpath("logs")
+    lock = path.joinpath("lock")
 
     cache.mkdir(exist_ok=True)
     logs.mkdir(exist_ok=True)
@@ -154,62 +156,76 @@ def make_order(
 
     if downloaded > 0:
 
-        # Argument "base_name" to "make_archive" has incompatible type "Path";
-        # expected "str"
-        shutil.make_archive(base_name=str(zip_file), format="zip", root_dir=cache)
+        LOCK_SLEEP_TIME = Env.get_int("LOCK_SLEEP_TIME")
+        while lock.exists():
+            log.info("Found a lock in {}, waiting", lock)
+            time.sleep(LOCK_SLEEP_TIME)
+        lock.touch(exist_ok=False)
 
-        MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
+        try:
+            # Argument "base_name" to "make_archive" has incompatible type "Path";
+            # expected "str"
+            shutil.make_archive(base_name=str(zip_file), format="zip", root_dir=cache)
 
-        z = zip_file.with_suffix(".zip")
-        size = z.stat().st_size
-        if size > MAX_ZIP_SIZE:
+            MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
 
-            log.warning(
-                "Zip too large, splitting {} (size {}, maxsize {})",
-                z,
-                size,
-                MAX_ZIP_SIZE,
-            )
+            z = zip_file.with_suffix(".zip")
+            size = z.stat().st_size
+            if size > MAX_ZIP_SIZE:
 
-            # Create a sub folder for split files. If already exists,
-            # remove it before to start from a clean environment
-            split_path = path.joinpath("zip_split")
+                log.warning(
+                    "Zip too large, splitting {} (size {}, maxsize {})",
+                    z,
+                    size,
+                    MAX_ZIP_SIZE,
+                )
 
-            if split_path.exists():
-                shutil.rmtree(split_path)
+                # Create a sub folder for split files. If already exists,
+                # remove it before to start from a clean environment
+                split_path = path.joinpath("zip_split")
 
-            split_path.mkdir(exist_ok=True)
+                if split_path.exists():
+                    shutil.rmtree(split_path)
 
-            # Execute the split of the zip
-            split_params = [
-                "-n",
-                MAX_ZIP_SIZE,
-                "-b",
-                split_path,
-                z,
-            ]
-            try:
-                zipsplit = local["/usr/bin/zipsplit"]
-                zipsplit(split_params)
-            except ProcessExecutionError as e:
+                split_path.mkdir(exist_ok=True)
 
-                if "Entry is larger than max split size" in e.stdout:
-                    reg = r"Entry too big to split, read, or write \((.*)\)"
-                    extra = None
-                    if m := re.search(reg, e.stdout):
-                        extra = m.group(1)
-                    # ErrorCodes.ZIP_SPLIT_ENTRY_TOO_LARGE
-                    log.error(extra)
-                else:
-                    # ErrorCodes.ZIP_SPLIT_ERROR
-                    log.error(e.stdout)
-        else:
-            log.critical(
-                "DEBUG CODE: {}, size {}, maxsize {}",
-                z,
-                size,
-                MAX_ZIP_SIZE,
-            )
+                # Execute the split of the zip
+                split_params = [
+                    "-n",
+                    MAX_ZIP_SIZE,
+                    "-b",
+                    split_path,
+                    z,
+                ]
+                try:
+                    zipsplit = local["/usr/bin/zipsplit"]
+                    zipsplit(split_params)
+                except ProcessExecutionError as e:
+
+                    if "Entry is larger than max split size" in e.stdout:
+                        reg = r"Entry too big to split, read, or write \((.*)\)"
+                        extra = None
+                        if m := re.search(reg, e.stdout):
+                            extra = m.group(1)
+                        # ErrorCodes.ZIP_SPLIT_ENTRY_TOO_LARGE
+                        log.error(extra)
+                    else:
+                        # ErrorCodes.ZIP_SPLIT_ERROR
+                        log.error(e.stdout)
+            else:
+                log.critical(
+                    "DEBUG CODE: {}, size {}, maxsize {}",
+                    z,
+                    size,
+                    MAX_ZIP_SIZE,
+                )
+
+            lock.unlink()
+        # should never happens, but is added to ensure no problems with lock release
+        except BaseException as e:  # pragma: no cover
+            log.error(e)
+            lock.unlink()
+            raise e
 
     log.info("Task executed on {}", path)
 
