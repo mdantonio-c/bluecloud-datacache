@@ -555,12 +555,11 @@ class TestApp(BaseTests):
         assert isinstance(new_download_url["url"], str)
         assert isinstance(new_download_url["size"], int)
         assert new_download_url["size"] > 0
+        assert new_download_url["url"] != download_url["url"]
 
         download_and_verify_zip(
             client, faker, new_download_url["url"], new_download_url["size"]
         )
-
-        assert new_download_url != download_url
 
         r = client.get(new_download_url)
         assert r.status_code == 200
