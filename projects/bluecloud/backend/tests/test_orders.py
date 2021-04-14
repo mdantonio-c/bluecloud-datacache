@@ -564,7 +564,7 @@ class TestApp(BaseTests):
         r = client.get(new_download_url["url"])
         assert r.status_code == 200
 
-        r = client.get(download_url)
+        r = client.get(download_url["url"])
         assert r.status_code == 400
 
     def test_order_deletion(self, client: FlaskClient, faker: Faker) -> None:
