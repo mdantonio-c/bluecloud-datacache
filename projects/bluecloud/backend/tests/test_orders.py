@@ -588,7 +588,7 @@ class TestApp(BaseTests):
         assert len(response["urls"]) == 1
 
         download_url = response["urls"][0]
-        r = client.get(download_url)
+        r = client.get(download_url["url"])
         assert r.status_code == 200
 
         path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
@@ -598,9 +598,9 @@ class TestApp(BaseTests):
         # Test error if the zip file does not exist (but the order still exist...
         # so this is an error condition that should never occur)
         with TemporaryRemovePath(path.joinpath("output.zip")):
-            r = client.get(download_url)
+            r = client.get(download_url["url"])
             assert r.status_code == 400
-        r = client.get(download_url)
+        r = client.get(download_url["url"])
         assert r.status_code == 200
 
         r = client.delete(
@@ -610,5 +610,5 @@ class TestApp(BaseTests):
 
         assert not path.exists()
 
-        r = client.get(download_url)
+        r = client.get(download_url["url"])
         assert r.status_code == 400
