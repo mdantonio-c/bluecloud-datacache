@@ -55,7 +55,9 @@ class DownloadRequest(EndpointResource):
 
             zip_path = os.path.join(marine_id, order_number, z.name)
 
-            log.info("Request download url for {}", zip_path)
+            filesize = zip_path.stat().st_size
+
+            log.info("Request download url for {} [size={}]", zip_path, filesize)
 
             token = get_token(abs_zippath, zip_path)
 
