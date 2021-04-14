@@ -403,7 +403,7 @@ class TestApp(BaseTests):
             assert isinstance(response["errors"], list)
             assert len(response["errors"]) == 0
 
-        # This is to test concurrency (not really handled yet)
+        # This is to test concurrency
         marine_id = faker.pystr()
         order_number = faker.pystr()
 
@@ -416,7 +416,7 @@ class TestApp(BaseTests):
                 [
                     {
                         "url": download_url1,
-                        "filename": faker.file_name(),
+                        "filename": filename_1,
                         "order_line": faker.pystr(),
                     },
                 ]
@@ -435,7 +435,7 @@ class TestApp(BaseTests):
                 [
                     {
                         "url": download_url3,
-                        "filename": faker.file_name(),
+                        "filename": filename_3,
                         "order_line": faker.pystr(),
                     },
                 ]
@@ -459,7 +459,7 @@ class TestApp(BaseTests):
 
         concurrent_zip_size = zip_file.stat().st_size
         assert concurrent_zip_size > 0
-        assert concurrent_zip_size > new_zip_size
+        assert concurrent_zip_size == new_zip_size
 
     def test_download_endpoint_definition(self, client: FlaskClient) -> None:
 
