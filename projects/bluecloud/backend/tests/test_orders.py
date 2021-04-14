@@ -561,7 +561,7 @@ class TestApp(BaseTests):
             client, faker, new_download_url["url"], new_download_url["size"]
         )
 
-        r = client.get(new_download_url["size"])
+        r = client.get(new_download_url["url"])
         assert r.status_code == 200
 
         r = client.get(download_url)
