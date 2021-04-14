@@ -248,9 +248,9 @@ class TestApp(BaseTests):
         order_line2 = faker.pystr()
         order_line3 = faker.pystr()
 
-        download_url1 = "https://www.google.com"
-        download_url2 = "https://github.com/rapydo/http-api/archive/v1.0.zip"
-        download_url3 = "https://invalidurlafailisexpected.zzz/f.zip"
+        download_url1 = "https://github.com/rapydo/http-api/archive/v1.0.zip"
+        download_url2 = "https://invalidurlafailisexpected.zzz/f.zip"
+        download_url3 = "https://github.com/rapydo/do/archive/v1.0.zip"
 
         data = {
             "debug": True,
@@ -268,11 +268,6 @@ class TestApp(BaseTests):
                         "url": download_url2,
                         "filename": filename_2,
                         "order_line": order_line2,
-                    },
-                    {
-                        "url": download_url3,
-                        "filename": filename_3,
-                        "order_line": order_line3,
                     },
                 ]
             ),
@@ -314,7 +309,7 @@ class TestApp(BaseTests):
 
         assert cache.exists()
         assert cache.joinpath(filename_1).exists()
-        assert cache.joinpath(filename_2).exists()
+        assert not cache.joinpath(filename_2).exists()
         assert not cache.joinpath(filename_3).exists()
 
         assert zip_file.exists()
@@ -339,15 +334,12 @@ class TestApp(BaseTests):
             assert response["order_number"] == order_number
             assert isinstance(response["errors"], list)
             assert len(response["errors"]) == 1
-            assert response["errors"][0]["order_line"] == order_line3
-            assert response["errors"][0]["url"] == download_url3
+            assert response["errors"][0]["order_line"] == order_line2
+            assert response["errors"][0]["url"] == download_url2
             assert response["errors"][0]["error_number"] == "001"
 
         # Send a second order to be merged:
         new_request_id = faker.pystr()
-        filename_4 = faker.file_name()
-        order_line4 = faker.pystr()
-        download_url4 = "https://github.com/rapydo/do/archive/v1.0.zip"
 
         data = {
             "debug": True,
@@ -357,9 +349,9 @@ class TestApp(BaseTests):
             "downloads": json.dumps(
                 [
                     {
-                        "url": download_url4,
-                        "filename": filename_4,
-                        "order_line": order_line4,
+                        "url": download_url3,
+                        "filename": filename_3,
+                        "order_line": order_line3,
                     },
                 ]
             ),
@@ -382,9 +374,8 @@ class TestApp(BaseTests):
         assert zip_file.exists()
 
         assert cache.joinpath(filename_1).exists()
-        assert cache.joinpath(filename_2).exists()
-        assert not cache.joinpath(filename_3).exists()
-        assert cache.joinpath(filename_4).exists()
+        assert not cache.joinpath(filename_2).exists()
+        assert cache.joinpath(filename_3).exists()
 
         new_zip_size = zip_file.stat().st_size
         assert new_zip_size > 0
@@ -425,11 +416,6 @@ class TestApp(BaseTests):
                         "filename": faker.file_name(),
                         "order_line": faker.pystr(),
                     },
-                    {
-                        "url": download_url2,
-                        "filename": faker.file_name(),
-                        "order_line": faker.pystr(),
-                    },
                 ]
             ),
         }
@@ -445,7 +431,7 @@ class TestApp(BaseTests):
             "downloads": json.dumps(
                 [
                     {
-                        "url": download_url4,
+                        "url": download_url3,
                         "filename": faker.file_name(),
                         "order_line": faker.pystr(),
                     },
