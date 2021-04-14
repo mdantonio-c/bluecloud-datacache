@@ -12,8 +12,13 @@ from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
 
 
+class DownloadURL(Schema):
+    url = fields.URL()
+    size = fields.Int()
+
+
 class DownloadURLs(Schema):
-    urls = fields.List(fields.URL())
+    urls = fields.List(DownloadURL)
 
 
 class DownloadRequest(EndpointResource):
@@ -58,6 +63,11 @@ class DownloadRequest(EndpointResource):
 
             token = get_token(path, zip_path)
 
-            data["urls"].append(f"{host}/api/download/{token}")
+            data["urls"].append(
+                {
+                    "url": f"{host}/api/download/{token}",
+                    "size": filesize,
+                }
+            )
 
         return self.response(data)
