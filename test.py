@@ -99,7 +99,9 @@ resp = requests.get(f"{host}/api/download/{marine_id}/{order_number}", headers=h
 
 print_response_or_exit(resp)
 
-url = resp.json()["urls"][0]
+content = resp.json()
+expected_size = content["urls"][0]["size"]
+url = content["urls"][0]["url"]
 
 log.info("Download url = {}", url)
 
@@ -113,6 +115,11 @@ os.system(cmd)
 
 if os.path.isfile(download_filename):
     log.info("File downloaded")
+
+    zipsize = Path(download_filename).stat().st_size
+    if zipsize != expected_size:
+        log.error("Wrong zip size, expected {}, found {}", expected_size, zipsize)
+
     try:
         with zipfile.ZipFile(download_filename, "r") as myzip:
             errors = myzip.testzip()

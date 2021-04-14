@@ -18,7 +18,7 @@ class DownloadURL(Schema):
 
 
 class DownloadURLs(Schema):
-    urls = fields.List(DownloadURL)
+    urls = fields.Nested(DownloadURL(many=True))
 
 
 class DownloadRequest(EndpointResource):
