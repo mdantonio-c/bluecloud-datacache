@@ -40,7 +40,7 @@ class TemporaryRemovePath:
 
 
 def download_and_verify_zip(
-    client: FlaskClient, faker: Faker, download_url: str
+    client: FlaskClient, faker: Faker, download_url: str, expected_size: int
 ) -> None:
     # http:// or https://
     assert download_url.startswith("http")
@@ -55,6 +55,9 @@ def download_and_verify_zip(
     local_filename = f"{faker.pystr()}.zip"
     with open(local_filename, "wb+") as f:
         f.write(r.data)
+
+    filesize = Path(local_filename).stat().st_size
+    assert filesize == expected_size
 
     try:
         with zipfile.ZipFile(local_filename, "r") as myzip:
@@ -524,8 +527,15 @@ class TestApp(BaseTests):
         assert len(response["urls"]) == 1
 
         download_url = response["urls"][0]
+        assert "url" in download_url
+        assert "size" in download_url
+        assert isinstance(download_url["url"], str)
+        assert isinstance(download_url["size"], int)
+        assert download_url["size"] > 0
 
-        download_and_verify_zip(client, faker, download_url)
+        download_and_verify_zip(
+            client, faker, download_url["url"], download_url["size"]
+        )
 
         # Request a new download link:
         r = client.get(
@@ -540,8 +550,15 @@ class TestApp(BaseTests):
         assert len(response["urls"]) == 1
 
         new_download_url = response["urls"][0]
+        assert "url" in new_download_url
+        assert "size" in new_download_url
+        assert isinstance(new_download_url["url"], str)
+        assert isinstance(new_download_url["size"], int)
+        assert new_download_url["size"] > 0
 
-        download_and_verify_zip(client, faker, new_download_url)
+        download_and_verify_zip(
+            client, faker, new_download_url["url"], new_download_url["size"]
+        )
 
         assert new_download_url != download_url
 
