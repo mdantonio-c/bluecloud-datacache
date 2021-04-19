@@ -55,7 +55,7 @@ def make_order(
     order_number: str,
     downloads: List[DownloadType],
     debug: bool,
-) -> str:
+) -> ResponseType:
 
     path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
 
