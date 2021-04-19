@@ -6,6 +6,8 @@ from restapi.tests import BaseTests
 
 # from restapi.services.uploader import Uploader
 
+TASK_NAME = "make_order"
+
 
 class TestApp(BaseTests):
     def test_task(self, app: Flask, faker: Faker) -> None:
@@ -13,8 +15,9 @@ class TestApp(BaseTests):
         request_id = faker.pyint()
         marine_id = faker.pystr()
         order_number = faker.pystr()
+
         output = BaseTests.send_task(
-            app, "make_order", request_id, marine_id, order_number, [], True
+            app, TASK_NAME, request_id, marine_id, order_number, [], True
         )
         assert output is None
 
@@ -22,7 +25,7 @@ class TestApp(BaseTests):
 
         headers = mail.get("headers")
         assert headers is not None
-        assert "Task test_task failed" in headers
+        assert f"Task {TASK_NAME} failed" in headers
 
         body = mail.get("body")
         assert body is not None
