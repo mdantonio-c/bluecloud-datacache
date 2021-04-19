@@ -256,4 +256,4 @@ def make_order(
                 FULL_URL,
             )
 
-    return "Task executed!"
+    return response
