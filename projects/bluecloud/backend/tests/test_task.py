@@ -57,8 +57,13 @@ class TestApp(BaseTests):
 
         # Send a request with two files to be downloaded (one with an invalid url)
 
+        # Unreachable
         wrong_download_url_1 = "https://invalidurlafailisexpected.zzz/f.zip"
         wrong_order_line_1 = faker.pystr()
+        # Missing schema
+
+        wrong_download_url_2 = "github.com/rapydo/http-api/archive/v1.0.zip"
+        wrong_order_line_2 = faker.pystr()
 
         downloads = [
             {
@@ -70,6 +75,11 @@ class TestApp(BaseTests):
                 "url": wrong_download_url_1,
                 "filename": faker.file_name(),
                 "order_line": wrong_order_line_1,
+            },
+            {
+                "url": wrong_download_url_2,
+                "filename": faker.file_name(),
+                "order_line": wrong_order_line_2,
             },
         ]
 
@@ -86,7 +96,7 @@ class TestApp(BaseTests):
         assert response["order_number"] == order_number
 
         assert "errors" in response
-        assert len(response["errors"]) == 1
+        assert len(response["errors"]) == 2
 
         assert "url" in response["errors"][0]
         assert response["errors"][0]["url"] == wrong_download_url_1
@@ -97,4 +107,12 @@ class TestApp(BaseTests):
         assert "error_number" in response["errors"][0]
         assert response["errors"][0]["error_number"] == "001"
 
+        assert "url" in response["errors"][1]
+        assert response["errors"][1]["url"] == wrong_download_url_2
+
+        assert "order_line" in response["errors"][1]
+        assert response["errors"][1]["order_line"] == wrong_order_line_2
+
+        assert "error_number" in response["errors"][1]
+        assert response["errors"][1]["error_number"] == "001"
         assert Path(path.joinpath("output.zip")).exists()

@@ -141,7 +141,7 @@ def make_order(
                 }
             )
             continue
-        except BaseException as e:
+        except BaseException as e:  # pragma: no cover
             log.error(e)
             response["errors"].append(
                 {
@@ -157,7 +157,7 @@ def make_order(
     if downloaded > 0:
 
         LOCK_SLEEP_TIME = Env.get_int("LOCK_SLEEP_TIME")
-        while lock.exists():
+        while lock.exists():  # pragma: no cover
             log.info("Found a lock in {}, waiting", lock)
             time.sleep(LOCK_SLEEP_TIME)
         lock.touch(exist_ok=False)
