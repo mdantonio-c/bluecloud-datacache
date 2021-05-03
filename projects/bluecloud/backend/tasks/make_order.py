@@ -50,7 +50,7 @@ class ErrorCodes:
     UNEXPECTED_ERROR = ("999", "An unexpected error occurred")
 
 
-def http_download(url, out_path) -> Optional[Tuple[str, str]]:
+def http_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
 
     try:
         r = requests.get(
@@ -80,7 +80,7 @@ def http_download(url, out_path) -> Optional[Tuple[str, str]]:
     return None
 
 
-def ftp_download(url, out_path) -> Optional[Tuple[str, str]]:
+def ftp_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
 
     try:
         parsed = urlparse(url)
