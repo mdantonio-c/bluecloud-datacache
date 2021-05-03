@@ -1,9 +1,12 @@
+import ftplib
 import json
 import re
 import shutil
+import socket
 import time
 from pathlib import Path
 from typing import List, Optional, Tuple, TypedDict
+from urllib.parse import urlparse
 
 import requests
 from bluecloud.endpoints.schemas import DownloadType
@@ -78,6 +81,21 @@ def http_download(url, out_path) -> Optional[Tuple[str, str]]:
 
 
 def ftp_download(url, out_path) -> Optional[Tuple[str, str]]:
+
+    try:
+        parsed = urlparse(url)
+        ftp = ftplib.FTP(parsed.netloc)
+        ftp.login()
+        # ftp.login(username, password)
+        with open(out_path, "wb") as downloaded_file:
+            ftp.retrbinary(f"RETR {parsed.path}", downloaded_file.write)
+    except socket.gaierror as e:
+        log.error(e)
+        return ErrorCodes.UNREACHABLE_DOWNLOAD_PATH
+    except ftplib.error_perm as e:
+        log.error(e)
+        return ErrorCodes.UNREACHABLE_DOWNLOAD_PATH
+
     return None
 
 
