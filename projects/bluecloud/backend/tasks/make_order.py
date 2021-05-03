@@ -3,7 +3,7 @@ import re
 import shutil
 import time
 from pathlib import Path
-from typing import List, TypedDict
+from typing import List, Optional, Tuple, TypedDict
 
 import requests
 from bluecloud.endpoints.schemas import DownloadType
@@ -45,6 +45,40 @@ class ErrorCodes:
     UNREACHABLE_DOWNLOAD_PATH = ("001", "Download path is unreachable")
     INVALID_RESPONSE = ("002", "Invalid response, received status different than 200")
     UNEXPECTED_ERROR = ("999", "An unexpected error occurred")
+
+
+def http_download(url, out_path) -> Optional[Tuple[str, str]]:
+
+    try:
+        r = requests.get(
+            url,
+            stream=True,
+            verify=False,
+            headers=DOWNLOAD_HEADERS,
+        )
+
+        if r.status_code != 200:
+            log.error("Invalid response from {}: {}", url, r.status_code)
+
+            return ErrorCodes.INVALID_RESPONSE
+
+        with open(out_path, "wb") as downloaded_file:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:  # filter out keep-alive new chunks
+                    downloaded_file.write(chunk)
+
+    except requests.exceptions.ConnectionError as e:
+        log.error(e)
+        return ErrorCodes.UNREACHABLE_DOWNLOAD_PATH
+    except requests.exceptions.MissingSchema as e:
+        log.error(e)
+        return ErrorCodes.UNREACHABLE_DOWNLOAD_PATH
+
+    return None
+
+
+def ftp_download(url, out_path) -> Optional[Tuple[str, str]]:
+    return None
 
 
 @CeleryExt.task()
@@ -94,53 +128,25 @@ def make_order(
 
         try:
 
-            r = requests.get(
-                download_url,
-                stream=True,
-                verify=False,
-                headers=DOWNLOAD_HEADERS,
-            )
+            local_path = cache.joinpath(filename)
 
-            if r.status_code != 200:
-                log.error("Invalid response from {}: {}", download_url, r.status_code)
+            if download_url.startswith("ftp://"):
+                error = ftp_download(download_url, local_path)
+            else:
+                error = http_download(download_url, local_path)
+
+            if error:
                 response["errors"].append(
                     {
                         "url": download_url,
                         "order_line": order_line,
-                        "error_number": ErrorCodes.INVALID_RESPONSE[0],
+                        "error_number": error[0],
                     }
                 )
-
                 continue
 
-            local_path = cache.joinpath(filename)
-
-            with open(local_path, "wb") as downloaded_file:
-                for chunk in r.iter_content(chunk_size=1024):
-                    if chunk:  # filter out keep-alive new chunks
-                        downloaded_file.write(chunk)
-
             downloaded += 1
-        except requests.exceptions.ConnectionError as e:
-            log.error(e)
-            response["errors"].append(
-                {
-                    "url": download_url,
-                    "order_line": order_line,
-                    "error_number": ErrorCodes.UNREACHABLE_DOWNLOAD_PATH[0],
-                }
-            )
-            continue
-        except requests.exceptions.MissingSchema as e:
-            log.error(e)
-            response["errors"].append(
-                {
-                    "url": download_url,
-                    "order_line": order_line,
-                    "error_number": ErrorCodes.UNREACHABLE_DOWNLOAD_PATH[0],
-                }
-            )
-            continue
+
         except BaseException as e:  # pragma: no cover
             log.error(e)
             response["errors"].append(
