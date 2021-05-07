@@ -24,11 +24,16 @@ class Download(EndpointResource):
             log.error(e)
             raise BadRequest("Invalid token")
 
+        # zippath is /uploads/MARINE-ID/ORDER-NUMER/FILE.zip
         zippath = UPLOAD_PATH.joinpath(path)
 
+        # .parent /uploads/MARINE-ID/ORDER-NUMER
+        # .name ORDER-NUMER
+        order_num = zippath.parent.name
+        filename = f"Blue-Cloud_order_{order_num}.zip"
         if not zippath.exists():
             raise BadRequest("Invalid token")
 
         log.info("Request download for path: {}", zippath)
 
-        return Downloader.send_file_streamed(zippath)
+        return Downloader.send_file_streamed(zippath, out_filename=filename)
