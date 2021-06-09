@@ -1,2 +1,5 @@
 ignore:
+  # it seems to be non working
   - "projects/bluecloud/backend/migrations/env.py"
+  # let's try with a relative path from inside the container
+  - "bluecloud/migrations/env.py"
