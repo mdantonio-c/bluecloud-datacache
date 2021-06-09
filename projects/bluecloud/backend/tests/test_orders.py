@@ -348,6 +348,76 @@ class TestApp(BaseTests):
             assert response["errors"][0]["url"] == download_url2
             assert response["errors"][0]["error_number"] == "001"
 
+        r = client.get(f"{API_URI}/download/invalid/invalid", headers=headers)
+        assert r.status_code == 404
+
+        r = client.get(f"{API_URI}/download/{marine_id}/invalid", headers=headers)
+        assert r.status_code == 404
+
+        r = client.get(f"{API_URI}/download/invalid/{order_number}", headers=headers)
+        assert r.status_code == 404
+
+        # Request download links:
+        r = client.get(
+            f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
+        )
+        assert r.status_code == 200
+
+        response = self.get_content(r)
+        assert "urls" in response
+        assert isinstance(response["urls"], list)
+
+        assert len(response["urls"]) == 1
+
+        download_url = response["urls"][0]
+        assert "url" in download_url
+        assert "size" in download_url
+        assert isinstance(download_url["url"], str)
+        assert isinstance(download_url["size"], int)
+        assert download_url["size"] > 0
+
+        download_and_verify_zip(
+            client,
+            faker,
+            download_url["url"],
+            download_url["size"],
+            f"Blue-Cloud_order_{order_number}.zip",
+        )
+
+        # Request a new download link:
+        r = client.get(
+            f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
+        )
+        assert r.status_code == 200
+
+        response = self.get_content(r)
+        assert "urls" in response
+        assert isinstance(response["urls"], list)
+
+        assert len(response["urls"]) == 1
+
+        new_download_url = response["urls"][0]
+        assert "url" in new_download_url
+        assert "size" in new_download_url
+        assert isinstance(new_download_url["url"], str)
+        assert isinstance(new_download_url["size"], int)
+        assert new_download_url["size"] > 0
+        assert new_download_url["url"] != download_url["url"]
+
+        download_and_verify_zip(
+            client,
+            faker,
+            new_download_url["url"],
+            new_download_url["size"],
+            f"Blue-Cloud_order_{order_number}.zip",
+        )
+
+        r = client.get(new_download_url["url"])
+        assert r.status_code == 200
+
+        r = client.get(download_url["url"])
+        assert r.status_code == 400
+
         # Send a second order to be merged:
         new_request_id = faker.pystr()
 
@@ -559,82 +629,6 @@ class TestApp(BaseTests):
 
         r = client.delete(f"{API_URI}/download/marine_id/order_number")
         assert r.status_code == 405
-
-    def test_order_download(self, client: FlaskClient, faker: Faker) -> None:
-
-        headers, _ = self.do_login(client, None, None)
-        marine_id = self.get("marine_id")
-        order_number = self.get("order_number")
-
-        r = client.get(f"{API_URI}/download/invalid/invalid", headers=headers)
-        assert r.status_code == 404
-
-        r = client.get(f"{API_URI}/download/{marine_id}/invalid", headers=headers)
-        assert r.status_code == 404
-
-        r = client.get(f"{API_URI}/download/invalid/{order_number}", headers=headers)
-        assert r.status_code == 404
-
-        # Request download links:
-        r = client.get(
-            f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
-        )
-        assert r.status_code == 200
-
-        response = self.get_content(r)
-        assert "urls" in response
-        assert isinstance(response["urls"], list)
-
-        assert len(response["urls"]) == 1
-
-        download_url = response["urls"][0]
-        assert "url" in download_url
-        assert "size" in download_url
-        assert isinstance(download_url["url"], str)
-        assert isinstance(download_url["size"], int)
-        assert download_url["size"] > 0
-
-        download_and_verify_zip(
-            client,
-            faker,
-            download_url["url"],
-            download_url["size"],
-            f"Blue-Cloud_order_{order_number}.zip",
-        )
-
-        # Request a new download link:
-        r = client.get(
-            f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
-        )
-        assert r.status_code == 200
-
-        response = self.get_content(r)
-        assert "urls" in response
-        assert isinstance(response["urls"], list)
-
-        assert len(response["urls"]) == 1
-
-        new_download_url = response["urls"][0]
-        assert "url" in new_download_url
-        assert "size" in new_download_url
-        assert isinstance(new_download_url["url"], str)
-        assert isinstance(new_download_url["size"], int)
-        assert new_download_url["size"] > 0
-        assert new_download_url["url"] != download_url["url"]
-
-        download_and_verify_zip(
-            client,
-            faker,
-            new_download_url["url"],
-            new_download_url["size"],
-            f"Blue-Cloud_order_{order_number}.zip",
-        )
-
-        r = client.get(new_download_url["url"])
-        assert r.status_code == 200
-
-        r = client.get(download_url["url"])
-        assert r.status_code == 400
 
     def test_order_deletion(self, client: FlaskClient, faker: Faker) -> None:
 
