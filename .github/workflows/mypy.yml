@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.8
       - uses: rapydo/actions/install@v1
         with:
           project: ${PROJECT}
@@ -25,7 +25,7 @@ jobs:
       - uses: rapydo/actions/mypy@v1
         with:
           project: ${PROJECT}
-          install: types-Flask types-requests
+          # install: ...
           ignore: sqlalchemy faker plumbum
       - name: Save Report
         uses: actions/upload-artifact@v2
