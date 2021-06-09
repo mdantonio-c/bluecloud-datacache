@@ -308,7 +308,6 @@ class TestApp(BaseTests):
 
         cache = path.joinpath("cache")
         logs = path.joinpath("logs")
-        zip_split = path.joinpath("zip_split")
         zip_file = path.joinpath("output.zip")
 
         assert cache.exists()
@@ -320,10 +319,9 @@ class TestApp(BaseTests):
         zip_size = zip_file.stat().st_size
         assert zip_size > 0
 
-        assert not zip_split.exists()
-        assert not zip_split.joinpath("output1.zip").exists()
-        assert not zip_split.joinpath("output2.zip").exists()
-        assert not zip_split.joinpath("output3.zip").exists()
+        assert not path.joinpath("output1.zip").exists()
+        assert not path.joinpath("output2.zip").exists()
+        assert not path.joinpath("output3.zip").exists()
 
         assert logs.exists()
         assert logs.joinpath("response.json").exists()
@@ -370,25 +368,29 @@ class TestApp(BaseTests):
         # Not the best... but enough for now
         time.sleep(20)
 
-        # Now the order should be completed, let's verify the result:
+        # Now the order should be completed, let's verify the result.
+        # Two zips are expected now
 
         assert path.exists()
         assert cache.exists()
         assert logs.exists()
-        assert zip_file.exists()
+        # The single zip file no longer exists
+        assert not zip_file.exists()
+
+        zip_file1 = path.joinpath("output1.zip")
+        zip_file2 = path.joinpath("output2.zip")
+        zip_file3 = path.joinpath("output3.zip")
+        assert zip_file1.exists()
+        assert zip_file2.exists()
+        assert not zip_file3.exists()
 
         assert cache.joinpath(filename_1).exists()
         assert not cache.joinpath(filename_2).exists()
         assert cache.joinpath(filename_3).exists()
 
-        new_zip_size = zip_file.stat().st_size
+        new_zip_size = zip_file1.stat().st_size + zip_file2.stat().st_size
         assert new_zip_size > 0
         assert new_zip_size > zip_size
-
-        assert zip_split.exists()
-        assert zip_split.joinpath("output1.zip").exists()
-        assert zip_split.joinpath("output2.zip").exists()
-        assert not zip_split.joinpath("output3.zip").exists()
 
         assert logs.joinpath("response.json").exists()
         # response.json file is overwritten
@@ -403,6 +405,41 @@ class TestApp(BaseTests):
             assert response["order_number"] == order_number
             assert isinstance(response["errors"], list)
             assert len(response["errors"]) == 0
+
+        # Add here the download request, it is expected to receive two urls
+
+        r = client.get(
+            f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
+        )
+        assert r.status_code == 200
+
+        response = self.get_content(r)
+        assert "urls" in response
+        assert isinstance(response["urls"], list)
+
+        assert len(response["urls"]) == 2
+
+        download_url = response["urls"][0]
+        assert "url" in download_url
+        assert "size" in download_url
+        assert isinstance(download_url["url"], str)
+        assert isinstance(download_url["size"], int)
+        assert download_url["size"] > 0
+
+        download_and_verify_zip(
+            client, faker, download_url["url"], download_url["size"]
+        )
+
+        download_url = response["urls"][1]
+        assert "url" in download_url
+        assert "size" in download_url
+        assert isinstance(download_url["url"], str)
+        assert isinstance(download_url["size"], int)
+        assert download_url["size"] > 0
+
+        download_and_verify_zip(
+            client, faker, download_url["url"], download_url["size"]
+        )
 
         # This is to test concurrency
         marine_id = faker.pystr()
@@ -455,6 +492,7 @@ class TestApp(BaseTests):
         path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
 
         assert path.exists()
+        # Probably this will fail because the output is split now
         zip_file = path.joinpath("output.zip")
         assert zip_file.exists()
 

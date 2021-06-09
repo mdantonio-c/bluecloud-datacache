@@ -205,7 +205,7 @@ def make_order(
                 )
 
                 # Create a sub folder for split files. If already exists,
-                # remove it before to start from a clean environment
+                # remove it to start from a clean environment
                 split_path = path.joinpath("zip_split")
 
                 if split_path.exists():
@@ -224,6 +224,19 @@ def make_order(
                 try:
                     zipsplit = local["/usr/bin/zipsplit"]
                     zipsplit(split_params)
+                    log.info("Split completed")
+                    # remove the whole zip to save space
+                    # and move all split zip on the main folder.
+                    # Then, remove the zip_split folder
+                    z.unlink()
+
+                    for f in split_path.glob("*.zip"):
+
+                        p = f.absolute()
+                        parent_dir = p.parents[1]
+                        p.rename(parent_dir.joinpath(p.name))
+
+                    shutil.rmtree(split_path)
                 except ProcessExecutionError as e:
 
                     if "Entry is larger than max split size" in e.stdout:
@@ -232,17 +245,17 @@ def make_order(
                         if m := re.search(reg, e.stdout):
                             extra = m.group(1)
                         # ErrorCodes.ZIP_SPLIT_ENTRY_TOO_LARGE
-                        log.error(extra)
+                        log.error("Entry is larger than max split size: {}", extra)
                     else:
                         # ErrorCodes.ZIP_SPLIT_ERROR
                         log.error(e.stdout)
-            else:
-                log.critical(
-                    "DEBUG CODE: {}, size {}, maxsize {}",
-                    z,
-                    size,
-                    MAX_ZIP_SIZE,
-                )
+            # else:
+            #     log.critical(
+            #         "DEBUG CODE: {}, size {}, maxsize {}",
+            #         z,
+            #         size,
+            #         MAX_ZIP_SIZE,
+            #     )
 
             lock.unlink()
         # should never happens, but is added to ensure no problems with lock release
@@ -253,7 +266,7 @@ def make_order(
 
     log.info("Task executed on {}", path)
 
-    # uhm... last execution override previous response... is this
+    # uhm... last execution override previous response...
     log_path = logs.joinpath("response.json")
     with open(log_path, "w+") as log_file:
         log_file.write(json.dumps(response))
