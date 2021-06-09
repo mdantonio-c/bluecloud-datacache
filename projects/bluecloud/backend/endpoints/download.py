@@ -29,7 +29,6 @@ class Download(EndpointResource):
         # zippath is /uploads/MARINE-ID/ORDER-NUMER/FILE.zip
         zippath = UPLOAD_PATH.joinpath(path)
 
-        log.critical(zippath.name)
         # .parent /uploads/MARINE-ID/ORDER-NUMER
         # .name ORDER-NUMER
         order_num = zippath.parent.name
