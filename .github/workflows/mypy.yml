@@ -25,7 +25,7 @@ jobs:
       - uses: rapydo/actions/mypy@v1
         with:
           project: ${PROJECT}
-          # install: ...
+          install: types-Flask types-requests
           ignore: sqlalchemy faker plumbum
       - name: Save Report
         uses: actions/upload-artifact@v2

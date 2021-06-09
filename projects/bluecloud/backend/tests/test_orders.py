@@ -648,7 +648,7 @@ class TestApp(BaseTests):
         assert "urls" in response
         assert isinstance(response["urls"], list)
 
-        assert len(response["urls"]) == 1
+        assert len(response["urls"]) == 2
 
         download_url = response["urls"][0]
         r = client.get(download_url["url"])
