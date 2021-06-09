@@ -46,7 +46,6 @@ class Download(EndpointResource):
                 zip_number = "0"
             filename = f"Blue-Cloud_order_{order_num}_{zip_number}.zip"
 
-        log.critical(filename)
         if not zippath.exists():
             raise BadRequest("Invalid token")
 

@@ -439,7 +439,7 @@ class TestApp(BaseTests):
             faker,
             download_url["url"],
             download_url["size"],
-            f"Blue-Cloud_order_{order_number}_1.zip",
+            f"Blue-Cloud_order_{order_number}_2.zip",
         )
 
         download_url = response["urls"][1]
@@ -454,7 +454,7 @@ class TestApp(BaseTests):
             faker,
             download_url["url"],
             download_url["size"],
-            f"Blue-Cloud_order_{order_number}_2.zip",
+            f"Blue-Cloud_order_{order_number}_1.zip",
         )
 
         # This is to test concurrency
