@@ -1,0 +1,2 @@
+ignore:
+  - "projects/bluecloud/backend/migrations/env.py"
