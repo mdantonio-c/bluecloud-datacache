@@ -12,7 +12,9 @@ class DownloadType(TypedDict):
 
 class Download(Schema):
     # download url to get the data
-    url = fields.Url(required=True)
+    # With email 07/06/21, 11:19 they asked to remove the URL validator...
+    # url = fields.Url(required=True)
+    url = fields.Str(required=True)
     # the new filename for the datafile
     filename = fields.Str(required=True)
     # unique number for identification

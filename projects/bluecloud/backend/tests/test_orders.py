@@ -178,7 +178,7 @@ class TestApp(BaseTests):
             "downloads": json.dumps(
                 [
                     {
-                        "url": faker.pystr(),
+                        "url": faker.pyint(),
                         "filename": faker.pyint(),
                         "order_line": faker.pyint(),
                     }
@@ -196,46 +196,47 @@ class TestApp(BaseTests):
         assert "url" in response["downloads"]["0"]
         assert "filename" in response["downloads"]["0"]
         assert "order_line" in response["downloads"]["0"]
-        assert response["downloads"]["0"]["url"] == ["Not a valid URL."]
+        assert response["downloads"]["0"]["url"] == ["Not a valid string."]
         assert response["downloads"]["0"]["filename"] == ["Not a valid string."]
         assert response["downloads"]["0"]["order_line"] == ["Not a valid string."]
 
         # #############################################################
-        data = {
-            "debug": True,
-            "request_id": faker.pystr(),
-            "marine_id": faker.pystr(),
-            "order_number": faker.pystr(),
-            "downloads": json.dumps(
-                [
-                    {
-                        "url": "https://www.google.com",
-                        "filename": faker.file_name(),
-                        "order_line": faker.pystr(),
-                    },
-                    {
-                        "url": faker.pystr(),
-                        "filename": faker.pyint(),
-                        "order_line": faker.pyint(),
-                    },
-                ]
-            ),
-        }
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
-        assert r.status_code == 400
-        response = self.get_content(r)
-        assert "request_id" not in response
-        assert "marine_id" not in response
-        assert "order_number" not in response
-        assert "downloads" in response
-        assert "0" not in response["downloads"]
-        assert "1" in response["downloads"]
-        assert "url" in response["downloads"]["1"]
-        assert "filename" in response["downloads"]["1"]
-        assert "order_line" in response["downloads"]["1"]
-        assert response["downloads"]["1"]["url"] == ["Not a valid URL."]
-        assert response["downloads"]["1"]["filename"] == ["Not a valid string."]
-        assert response["downloads"]["1"]["order_line"] == ["Not a valid string."]
+        # URLs validator is no longer enabled, now all strings are accepted
+        # data = {
+        #     "debug": True,
+        #     "request_id": faker.pystr(),
+        #     "marine_id": faker.pystr(),
+        #     "order_number": faker.pystr(),
+        #     "downloads": json.dumps(
+        #         [
+        #             {
+        #                 "url": "https://www.google.com",
+        #                 "filename": faker.file_name(),
+        #                 "order_line": faker.pystr(),
+        #             },
+        #             {
+        #                 "url": faker.pystr(),
+        #                 "filename": faker.pyint(),
+        #                 "order_line": faker.pyint(),
+        #             },
+        #         ]
+        #     ),
+        # }
+        # r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        # assert r.status_code == 400
+        # response = self.get_content(r)
+        # assert "request_id" not in response
+        # assert "marine_id" not in response
+        # assert "order_number" not in response
+        # assert "downloads" in response
+        # assert "0" not in response["downloads"]
+        # assert "1" in response["downloads"]
+        # assert "url" in response["downloads"]["1"]
+        # assert "filename" in response["downloads"]["1"]
+        # assert "order_line" in response["downloads"]["1"]
+        # assert response["downloads"]["1"]["url"] == ["Not a valid URL."]
+        # assert response["downloads"]["1"]["filename"] == ["Not a valid string."]
+        # assert response["downloads"]["1"]["order_line"] == ["Not a valid string."]
 
         marine_id = faker.pystr()
         self.save("marine_id", marine_id)
