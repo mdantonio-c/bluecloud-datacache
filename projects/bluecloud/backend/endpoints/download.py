@@ -1,3 +1,5 @@
+import re
+
 from bluecloud.endpoints import read_token
 from restapi import decorators
 from restapi.config import UPLOAD_PATH
@@ -27,10 +29,24 @@ class Download(EndpointResource):
         # zippath is /uploads/MARINE-ID/ORDER-NUMER/FILE.zip
         zippath = UPLOAD_PATH.joinpath(path)
 
+        log.critical(zippath.name)
         # .parent /uploads/MARINE-ID/ORDER-NUMER
         # .name ORDER-NUMER
         order_num = zippath.parent.name
-        filename = f"Blue-Cloud_order_{order_num}.zip"
+        # single zip
+        if zippath.name == "output.zip":
+            filename = f"Blue-Cloud_order_{order_num}.zip"
+        # split zip
+        else:
+            m = re.search(r"output([0-9]+).zip", zippath.name)
+            if m:
+                zip_number = m.group(1)
+            else:  # pragma: no cover
+                log.error("Can't extract zip number from {}", zippath.name)
+                zip_number = "0"
+            filename = f"Blue-Cloud_order_{order_num}_{zip_number}.zip"
+
+        log.critical(filename)
         if not zippath.exists():
             raise BadRequest("Invalid token")
 

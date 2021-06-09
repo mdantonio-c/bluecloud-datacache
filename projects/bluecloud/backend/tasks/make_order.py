@@ -224,7 +224,7 @@ def make_order(
                 try:
                     zipsplit = local["/usr/bin/zipsplit"]
                     zipsplit(split_params)
-                    log.info("Split completed")
+                    log.info("Split completed, moving files")
                     # remove the whole zip to save space
                     # and move all split zip on the main folder.
                     # Then, remove the zip_split folder
@@ -237,6 +237,7 @@ def make_order(
                         p.rename(parent_dir.joinpath(p.name))
 
                     shutil.rmtree(split_path)
+                    log.info("Split completed")
                 except ProcessExecutionError as e:
 
                     if "Entry is larger than max split size" in e.stdout:

@@ -1,4 +1,5 @@
 import json
+import re
 import time
 import zipfile
 from datetime import datetime
@@ -40,7 +41,11 @@ class TemporaryRemovePath:
 
 
 def download_and_verify_zip(
-    client: FlaskClient, faker: Faker, download_url: str, expected_size: int
+    client: FlaskClient,
+    faker: Faker,
+    download_url: str,
+    expected_size: int,
+    expected_filename: str,
 ) -> None:
     # http:// or https://
     assert download_url.startswith("http")
@@ -51,6 +56,9 @@ def download_and_verify_zip(
 
     r = client.get(download_url)
     assert r.status_code == 200
+
+    filenames = re.findall(r"filename=(\S+)", r.headers["Content-Disposition"])
+    assert filenames[0] == expected_filename
 
     local_filename = f"{faker.pystr()}.zip"
     with open(local_filename, "wb+") as f:
@@ -427,7 +435,11 @@ class TestApp(BaseTests):
         assert download_url["size"] > 0
 
         download_and_verify_zip(
-            client, faker, download_url["url"], download_url["size"]
+            client,
+            faker,
+            download_url["url"],
+            download_url["size"],
+            f"Blue-Cloud_order_{order_number}_1.zip",
         )
 
         download_url = response["urls"][1]
@@ -438,7 +450,11 @@ class TestApp(BaseTests):
         assert download_url["size"] > 0
 
         download_and_verify_zip(
-            client, faker, download_url["url"], download_url["size"]
+            client,
+            faker,
+            download_url["url"],
+            download_url["size"],
+            f"Blue-Cloud_order_{order_number}_2.zip",
         )
 
         # This is to test concurrency
@@ -579,7 +595,11 @@ class TestApp(BaseTests):
         assert download_url["size"] > 0
 
         download_and_verify_zip(
-            client, faker, download_url["url"], download_url["size"]
+            client,
+            faker,
+            download_url["url"],
+            download_url["size"],
+            f"Blue-Cloud_order_{order_number}.zip",
         )
 
         # Request a new download link:
@@ -603,7 +623,11 @@ class TestApp(BaseTests):
         assert new_download_url["url"] != download_url["url"]
 
         download_and_verify_zip(
-            client, faker, new_download_url["url"], new_download_url["size"]
+            client,
+            faker,
+            new_download_url["url"],
+            new_download_url["size"],
+            f"Blue-Cloud_order_{order_number}.zip",
         )
 
         r = client.get(new_download_url["url"])
