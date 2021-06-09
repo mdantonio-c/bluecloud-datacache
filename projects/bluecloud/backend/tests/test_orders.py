@@ -492,11 +492,17 @@ class TestApp(BaseTests):
         path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
 
         assert path.exists()
-        # Probably this will fail because the output is split now
-        zip_file = path.joinpath("output.zip")
-        assert zip_file.exists()
 
-        concurrent_zip_size = zip_file.stat().st_size
+        zip_file = path.joinpath("output.zip")
+        zip_file1 = path.joinpath("output1.zip")
+        zip_file2 = path.joinpath("output2.zip")
+        zip_file3 = path.joinpath("output3.zip")
+        assert not zip_file.exists()
+        assert zip_file1.exists()
+        assert zip_file2.exists()
+        assert not zip_file3.exists()
+
+        concurrent_zip_size = zip_file1.stat().st_size + zip_file2.stat().st_size
         assert concurrent_zip_size > 0
         assert concurrent_zip_size == new_zip_size
 
