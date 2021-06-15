@@ -1,2 +1,4 @@
 ignore:
+  # it seems that both are needed
+  - "projects/bluecloud/backend/migrations/env.py"
   - "bluecloud/migrations/env.py"
