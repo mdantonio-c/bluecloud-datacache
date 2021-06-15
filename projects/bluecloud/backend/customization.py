@@ -11,7 +11,6 @@ class Customizer(BaseCustomizer):
     def custom_user_properties_pre(
         properties: Props,
     ) -> Tuple[Props, Props]:
-
         """
         executed just before user creation
         use this method to removed or manipulate input properties
@@ -73,4 +72,4 @@ class Customizer(BaseCustomizer):
         """
         this method is used to extend the output model of admin users
         """
-        return Customizer.get_custom_input_fields(request, scope=BaseCustomizer.ADMIN)
+        return {}
