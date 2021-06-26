@@ -111,6 +111,7 @@ def make_order(
 
     path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
 
+    log.critical(path)
     log.info("Starting task on {}", path)
 
     # it is expected to be created by the endpoint
