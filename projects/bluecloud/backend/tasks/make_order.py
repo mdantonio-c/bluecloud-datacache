@@ -111,8 +111,7 @@ def make_order(
 
     path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
 
-    log.critical(path)
-    log.info("Starting task on {}", path)
+    log.warning("{}: starting task with {} download(s)", path, len(downloads))
 
     # it is expected to be created by the endpoint
     if not path.exists():
@@ -126,12 +125,6 @@ def make_order(
 
     cache.mkdir(exist_ok=True)
     logs.mkdir(exist_ok=True)
-
-    # log.info("Task ID: {}", self.request.id)
-    # log.info("Request ID = {}", request_id)
-    # log.info("Marine ID = {}", marine_id)
-    # log.info("Order number = {}", order_number)
-    # log.info("Download list = {}", downloads[0:10])
 
     response: ResponseType = {
         "request_id": request_id,
@@ -169,7 +162,7 @@ def make_order(
             downloaded += 1
 
         except BaseException as e:  # pragma: no cover
-            log.error(e)
+            log.error("{}: {}", path, e)
             response["errors"].append(
                 {
                     "url": download_url,
@@ -179,13 +172,13 @@ def make_order(
             )
             continue
 
-    log.info("Downloaded {} files on {}", downloaded, path)
+    log.warning("{}: downloaded {} file(s)", path, downloaded)
 
     if downloaded > 0:
 
         LOCK_SLEEP_TIME = Env.get_int("LOCK_SLEEP_TIME")
         while lock.exists():  # pragma: no cover
-            log.info("Found a lock in {}, waiting", lock)
+            log.warning("{}: found a lock ({}), waiting", path, lock)
             time.sleep(LOCK_SLEEP_TIME)
         lock.touch(exist_ok=False)
 
@@ -201,7 +194,8 @@ def make_order(
             if size > MAX_ZIP_SIZE:
 
                 log.warning(
-                    "Zip too large, splitting {} (size {}, maxsize {})",
+                    "{}: zip too large, splitting {} (size {}, maxsize {})",
+                    path,
                     z,
                     size,
                     MAX_ZIP_SIZE,
@@ -227,7 +221,7 @@ def make_order(
                 try:
                     zipsplit = local["/usr/bin/zipsplit"]
                     zipsplit(split_params)
-                    log.info("Split completed, moving files")
+                    log.info("{}: split completed, moving files", path)
                     # remove the whole zip to save space
                     # and move all split zip on the main folder.
                     # Then, remove the zip_split folder
@@ -240,7 +234,7 @@ def make_order(
                         p.rename(parent_dir.joinpath(p.name))
 
                     shutil.rmtree(split_path)
-                    log.info("Split completed")
+                    log.warning("{}: split completed", path)
                 except ProcessExecutionError as e:
 
                     if "Entry is larger than max split size" in e.stdout:
@@ -249,10 +243,12 @@ def make_order(
                         if m := re.search(reg, e.stdout):
                             extra = m.group(1)
                         # ErrorCodes.ZIP_SPLIT_ENTRY_TOO_LARGE
-                        log.error("Entry is larger than max split size: {}", extra)
+                        log.error(
+                            "{}: entry is larger than max split size: {}", path, extra
+                        )
                     else:
                         # ErrorCodes.ZIP_SPLIT_ERROR
-                        log.error(e.stdout)
+                        log.error("{}: {}", path, e.stdout)
             # else:
             #     log.critical(
             #         "DEBUG CODE: {}, size {}, maxsize {}",
@@ -264,11 +260,11 @@ def make_order(
             lock.unlink()
         # should never happens, but is added to ensure no problems with lock release
         except BaseException as e:  # pragma: no cover
-            log.error(e)
+            log.error("{}: {}", path, e)
             lock.unlink()
             raise e
 
-    log.info("Task executed on {}", path)
+    log.warning("{}: task completed", path)
 
     # uhm... last execution override previous response...
     log_path = logs.joinpath("response.json")
@@ -286,13 +282,15 @@ def make_order(
 
         if r.status_code != 200:
             log.error(
-                "Failed to call external API (status: {}, uri: {})",
+                "{}: failed to call external API (status: {}, uri: {})",
+                path,
                 r.status_code,
                 FULL_URL,
             )
         else:
-            log.info(
-                "Called POST on external API (status: {}, uri: {})",
+            log.warning(
+                "{}: called POST on external API (status: {}, uri: {})",
+                path,
                 r.status_code,
                 FULL_URL,
             )
