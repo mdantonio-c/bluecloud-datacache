@@ -497,7 +497,7 @@ class TestApp(BaseTests):
 
         assert len(response["urls"]) == 2
 
-        download_url = response["urls"][1]
+        download_url = response["urls"][0]
         assert "url" in download_url
         assert "size" in download_url
         assert isinstance(download_url["url"], str)
@@ -509,7 +509,7 @@ class TestApp(BaseTests):
             faker,
             download_url["url"],
             download_url["size"],
-            f"Blue-Cloud_order_{order_number}_2.zip",
+            f"Blue-Cloud_order_{order_number}_1.zip",
         )
 
         download_url = response["urls"][1]
@@ -524,7 +524,7 @@ class TestApp(BaseTests):
             faker,
             download_url["url"],
             download_url["size"],
-            f"Blue-Cloud_order_{order_number}_1.zip",
+            f"Blue-Cloud_order_{order_number}_2.zip",
         )
 
         # This is to test concurrency
