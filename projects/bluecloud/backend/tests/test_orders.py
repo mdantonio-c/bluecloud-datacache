@@ -497,7 +497,7 @@ class TestApp(BaseTests):
 
         assert len(response["urls"]) == 2
 
-        download_url = response["urls"][0]
+        download_url = response["urls"][1]
         assert "url" in download_url
         assert "size" in download_url
         assert isinstance(download_url["url"], str)
