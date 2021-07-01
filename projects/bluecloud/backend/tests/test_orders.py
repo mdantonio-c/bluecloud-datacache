@@ -660,9 +660,10 @@ class TestApp(BaseTests):
 
         # Test error if the zip file does not exist (but the order still exist...
         # so this is an error condition that should never occur)
-        with TemporaryRemovePath(path.joinpath("output2.zip")):
-            r = client.get(download_url["url"])
-            assert r.status_code == 400
+        with TemporaryRemovePath(path.joinpath("output1.zip")):
+            with TemporaryRemovePath(path.joinpath("output2.zip")):
+                r = client.get(download_url["url"])
+                assert r.status_code == 400
         r = client.get(download_url["url"])
         assert r.status_code == 200
 
