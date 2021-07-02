@@ -26,7 +26,7 @@ jobs:
         with:
           project: ${PROJECT}
           # install: ...
-          ignore: sqlalchemy faker plumbum
+          ignore: faker plumbum
       - name: Save Report
         uses: actions/upload-artifact@v2
         with:
