@@ -50,7 +50,7 @@ class Order(EndpointResource):
         celery_ext = celery.get_instance()
         task = celery_ext.celery_app.send_task(
             "make_order",
-            args=(
+            args=(  # type: ignore
                 request_id,
                 marine_id,
                 order_number,
