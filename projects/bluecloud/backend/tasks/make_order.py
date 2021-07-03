@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import requests
 from bluecloud.endpoints.schemas import DownloadType
+from celery.app.task import Task
 from plumbum import local
 from plumbum.commands.processes import ProcessExecutionError
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -101,7 +102,7 @@ def ftp_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
 
 @CeleryExt.task()
 def make_order(
-    self: CeleryExt.TaskType,
+    self: Task,
     request_id: str,
     marine_id: str,
     order_number: str,
