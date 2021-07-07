@@ -162,7 +162,7 @@ def make_order(
 
             downloaded += 1
 
-        except BaseException as e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             log.error("{}: {}", path, e)
             response["errors"].append(
                 {
@@ -260,7 +260,7 @@ def make_order(
 
             lock.unlink()
         # should never happens, but is added to ensure no problems with lock release
-        except BaseException as e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             log.error("{}: {}", path, e)
             lock.unlink()
             raise e

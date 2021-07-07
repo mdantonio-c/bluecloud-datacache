@@ -22,7 +22,7 @@ class Download(EndpointResource):
 
         try:
             path = read_token(token)
-        except BaseException as e:
+        except Exception as e:
             log.error(e)
             raise BadRequest("Invalid token")
 
