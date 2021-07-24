@@ -342,19 +342,19 @@ class TestApp(BaseTests):
         assert logs.exists()
         assert logs.joinpath("response.json").exists()
         with open(logs.joinpath("response.json")) as json_file:
-            response = json.load(json_file)
+            response_file = json.load(json_file)
 
-            assert response is not None
-            assert "request_id" in response
-            assert "order_number" in response
-            assert "errors" in response
-            assert response["request_id"] == request_id
-            assert response["order_number"] == order_number
-            assert isinstance(response["errors"], list)
-            assert len(response["errors"]) == 1
-            assert response["errors"][0]["order_line"] == order_line2
-            assert response["errors"][0]["url"] == download_url2
-            assert response["errors"][0]["error_number"] == "001"
+            assert response_file is not None
+            assert "request_id" in response_file
+            assert "order_number" in response_file
+            assert "errors" in response_file
+            assert response_file["request_id"] == request_id
+            assert response_file["order_number"] == order_number
+            assert isinstance(response_file["errors"], list)
+            assert len(response_file["errors"]) == 1
+            assert response_file["errors"][0]["order_line"] == order_line2
+            assert response_file["errors"][0]["url"] == download_url2
+            assert response_file["errors"][0]["error_number"] == "001"
 
         r = client.get(f"{API_URI}/download/invalid/invalid", headers=headers)
         assert r.status_code == 404
@@ -484,16 +484,16 @@ class TestApp(BaseTests):
         assert logs.joinpath("response.json").exists()
         # response.json file is overwritten
         with open(logs.joinpath("response.json")) as json_file:
-            response = json.load(json_file)
+            response_file = json.load(json_file)
 
-            assert response is not None
-            assert "request_id" in response
-            assert "order_number" in response
-            assert "errors" in response
-            assert response["request_id"] == new_request_id
-            assert response["order_number"] == order_number
-            assert isinstance(response["errors"], list)
-            assert len(response["errors"]) == 0
+            assert response_file is not None
+            assert "request_id" in response_file
+            assert "order_number" in response_file
+            assert "errors" in response_file
+            assert response_file["request_id"] == new_request_id
+            assert response_file["order_number"] == order_number
+            assert isinstance(response_file["errors"], list)
+            assert len(response_file["errors"]) == 0
 
         # Add here the download request, it is expected to receive two urls
 
