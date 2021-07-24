@@ -107,6 +107,7 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 400
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "request_id" in response
         assert response["request_id"] == ["Missing data for required field."]
         assert "marine_id" in response
@@ -127,6 +128,7 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 400
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "request_id" not in response
         assert "marine_id" not in response
         assert "order_number" not in response
@@ -145,6 +147,7 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 400
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "request_id" not in response
         assert "marine_id" not in response
         assert "order_number" not in response
@@ -163,6 +166,7 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 400
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "request_id" not in response
         assert "marine_id" not in response
         assert "order_number" not in response
@@ -196,6 +200,7 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 400
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "request_id" not in response
         assert "marine_id" not in response
         assert "order_number" not in response
@@ -233,6 +238,7 @@ class TestApp(BaseTests):
         # r = client.post(f"{API_URI}/order", headers=headers, data=data)
         # assert r.status_code == 400
         # response = self.get_content(r)
+        # assert isinstance(response, dict)
         # assert "request_id" not in response
         # assert "marine_id" not in response
         # assert "order_number" not in response
@@ -287,6 +293,7 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 202
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "request_id" in response
         assert "datetime" in response
 
@@ -301,6 +308,7 @@ class TestApp(BaseTests):
         assert r.status_code == 200
 
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "urls" in response
         assert isinstance(response["urls"], list)
         assert len(response["urls"]) == 0
@@ -364,6 +372,7 @@ class TestApp(BaseTests):
         assert r.status_code == 200
 
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "urls" in response
         assert isinstance(response["urls"], list)
 
@@ -391,6 +400,7 @@ class TestApp(BaseTests):
         assert r.status_code == 200
 
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "urls" in response
         assert isinstance(response["urls"], list)
 
@@ -440,6 +450,7 @@ class TestApp(BaseTests):
         r = client.post(f"{API_URI}/order", headers=headers, data=data)
         assert r.status_code == 202
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "request_id" in response
         assert "datetime" in response
 
@@ -492,6 +503,7 @@ class TestApp(BaseTests):
         assert r.status_code == 200
 
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "urls" in response
         assert isinstance(response["urls"], list)
 
@@ -645,6 +657,7 @@ class TestApp(BaseTests):
         assert r.status_code == 200
 
         response = self.get_content(r)
+        assert isinstance(response, dict)
         assert "urls" in response
         assert isinstance(response["urls"], list)
 
