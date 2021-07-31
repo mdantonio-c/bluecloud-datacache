@@ -46,6 +46,7 @@ def download_and_verify_zip(
     download_url: str,
     expected_size: int,
     expected_filename: str,
+    expected_alt_filename: str,
 ) -> None:
     # http:// or https://
     assert download_url.startswith("http")
@@ -57,8 +58,8 @@ def download_and_verify_zip(
     r = client.get(download_url)
     assert r.status_code == 200
 
-    filenames = sorted(re.findall(r"filename=(\S+)", r.headers["Content-Disposition"]))
-    assert filenames[0] == expected_filename
+    filenames = re.findall(r"filename=(\S+)", r.headers["Content-Disposition"])
+    assert filenames[0] == expected_filename or filenames[0] == expected_alt_filename
 
     local_filename = f"{faker.pystr()}.zip"
     with open(local_filename, "wb+") as f:
@@ -522,6 +523,7 @@ class TestApp(BaseTests):
             download_url["url"],
             download_url["size"],
             f"Blue-Cloud_order_{order_number}_1.zip",
+            f"Blue-Cloud_order_{order_number}_2.zip",
         )
 
         download_url = response["urls"][1]
@@ -536,6 +538,7 @@ class TestApp(BaseTests):
             faker,
             download_url["url"],
             download_url["size"],
+            f"Blue-Cloud_order_{order_number}_1.zip",
             f"Blue-Cloud_order_{order_number}_2.zip",
         )
 
