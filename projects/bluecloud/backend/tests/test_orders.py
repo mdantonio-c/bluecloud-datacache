@@ -57,7 +57,7 @@ def download_and_verify_zip(
     r = client.get(download_url)
     assert r.status_code == 200
 
-    filenames = re.findall(r"filename=(\S+)", r.headers["Content-Disposition"])
+    filenames = sorted(re.findall(r"filename=(\S+)", r.headers["Content-Disposition"]))
     assert filenames[0] == expected_filename
 
     local_filename = f"{faker.pystr()}.zip"
