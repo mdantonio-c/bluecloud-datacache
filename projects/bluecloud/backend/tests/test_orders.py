@@ -46,7 +46,7 @@ def download_and_verify_zip(
     download_url: str,
     expected_size: int,
     expected_filename: str,
-    expected_alt_filename: str,
+    expected_alt_filename: Optional[str] = None,
 ) -> None:
     # http:// or https://
     assert download_url.startswith("http")
@@ -59,7 +59,13 @@ def download_and_verify_zip(
     assert r.status_code == 200
 
     filenames = re.findall(r"filename=(\S+)", r.headers["Content-Disposition"])
-    assert filenames[0] == expected_filename or filenames[0] == expected_alt_filename
+    fn = filenames[0]
+    # If provided, match both expected and expected_alternative filename
+    if expected_alt_filename:
+        assert fn == expected_filename or fn == expected_alt_filename
+    # Otherwise... match only the the former
+    else:
+        assert fn == expected_filename
 
     local_filename = f"{faker.pystr()}.zip"
     with open(local_filename, "wb+") as f:
