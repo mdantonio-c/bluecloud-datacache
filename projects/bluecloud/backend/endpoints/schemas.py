@@ -32,4 +32,4 @@ class OrderInputSchema(Schema):
     downloads = fields.List(fields.Nested(Download), required=True)
     # Used to test the endpoint without call back Maris
     # During tests is automatically defaulted to True ( === TESTING)
-    debug = fields.Boolean(missing=TESTING)
+    debug = fields.Boolean(load_default=TESTING)

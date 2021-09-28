@@ -8,6 +8,7 @@ from restapi.config import get_backend_url
 from restapi.exceptions import NotFound
 from restapi.models import Schema, fields
 from restapi.rest.definition import EndpointResource, Response
+from restapi.services.authentication import User
 from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
 
@@ -32,7 +33,7 @@ class DownloadRequest(EndpointResource):
             404: "The requested order cannot be found",
         },
     )
-    def get(self, marine_id: str, order_number: str) -> Response:
+    def get(self, marine_id: str, order_number: str, user: User) -> Response:
 
         path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
 

@@ -9,6 +9,7 @@ from restapi.connectors import celery
 from restapi.exceptions import NotFound
 from restapi.models import Schema, fields
 from restapi.rest.definition import EndpointResource, Response
+from restapi.services.authentication import User
 from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
 
@@ -37,6 +38,7 @@ class Order(EndpointResource):
         order_number: str,
         downloads: List[DownloadType],
         debug: bool,
+        user: User,
     ) -> Response:
 
         path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
@@ -69,7 +71,7 @@ class Order(EndpointResource):
         summary="Delete an order",
         responses={204: "Order successfully deleted"},
     )
-    def delete(self, marine_id: str, order_number: str) -> Response:
+    def delete(self, marine_id: str, order_number: str, user: User) -> Response:
 
         path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
 
