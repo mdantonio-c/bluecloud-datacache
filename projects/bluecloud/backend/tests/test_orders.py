@@ -628,7 +628,7 @@ class TestApp(BaseTests):
         assert r.status_code == 404
 
         r = client.get(f"{API_URI}/download/token")
-        assert r.status_code == 400
+        assert r.status_code == 401
 
         r = client.put(f"{API_URI}/download/token")
         assert r.status_code == 405
@@ -697,4 +697,4 @@ class TestApp(BaseTests):
         assert not path.exists()
 
         r = client.get(download_url["url"])
-        assert r.status_code == 400
+        assert r.status_code == 401
