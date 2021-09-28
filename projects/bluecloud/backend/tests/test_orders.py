@@ -53,7 +53,7 @@ def download_and_verify_zip(
     assert "/api/download/" in download_url
 
     r = client.get(f"{API_URI}/download/invalidtoken")
-    assert r.status_code == 400
+    assert r.status_code == 401
 
     r = client.get(download_url)
     assert r.status_code == 200

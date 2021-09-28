@@ -18,7 +18,7 @@ class Download(EndpointResource):
         summary="Download a file",
         responses={
             200: "Send the requested file as a stream of data",
-            403: "Provided token is invalid",
+            401: "Provided token is invalid",
         },
     )
     def get(self, token: str) -> Response:
