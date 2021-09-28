@@ -685,7 +685,7 @@ class TestApp(BaseTests):
         with TemporaryRemovePath(path.joinpath("output1.zip")):
             with TemporaryRemovePath(path.joinpath("output2.zip")):
                 r = client.get(download_url["url"])
-                assert r.status_code == 400
+                assert r.status_code == 404
         r = client.get(download_url["url"])
         assert r.status_code == 200
 
