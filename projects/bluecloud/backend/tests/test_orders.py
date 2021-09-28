@@ -433,7 +433,7 @@ class TestApp(BaseTests):
         assert r.status_code == 200
 
         r = client.get(download_url["url"])
-        assert r.status_code == 400
+        assert r.status_code == 401
 
         # Send a second order to be merged:
         new_request_id = faker.pystr()
