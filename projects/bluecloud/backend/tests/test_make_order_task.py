@@ -10,7 +10,7 @@ TASK_NAME = "make_order"
 
 
 class TestApp(BaseTests):
-    def test_task(self, app: Flask, faker: Faker) -> None:
+    def test_make_order_task(self, app: Flask, faker: Faker) -> None:
 
         request_id = faker.pyint()
         marine_id = faker.pystr()
