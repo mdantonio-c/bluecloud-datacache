@@ -1,4 +1,4 @@
 ignore:
-  # it seems that both are needed
-  - "projects/bluecloud/backend/migrations/env.py"
-  - "bluecloud/migrations/env.py"
+  - "submodules/rapydo-angular/src"
+  - "data/**/*"
+  - "projects/**/backend/tasks/test_task.py"
