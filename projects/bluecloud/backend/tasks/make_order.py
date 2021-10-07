@@ -100,6 +100,70 @@ def ftp_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
     return None
 
 
+def make_zip_archives(
+    path: Path, zip_file: Path, outdir: Path
+) -> Tuple[Path, List[Path]]:
+
+    # Argument "base_name" to "make_archive" has incompatible type "Path";
+    # expected "str"
+    shutil.make_archive(base_name=str(zip_file), format="zip", root_dir=outdir)
+
+    z = zip_file.with_suffix(".zip")
+
+    MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
+
+    size = z.stat().st_size
+    if size < MAX_ZIP_SIZE:
+        return z, []
+
+    log.warning(
+        "{}: zip too large, splitting {} (size {}, maxsize {})",
+        path,
+        z,
+        size,
+        MAX_ZIP_SIZE,
+    )
+
+    # Create a sub folder for split files. If already exists,
+    # remove it to start from a clean environment
+    split_path = path.joinpath("zip_split")
+
+    if split_path.exists():
+        shutil.rmtree(split_path)
+
+    split_path.mkdir(exist_ok=True)
+
+    # Execute the split of the zip
+    split_params = [
+        "-n",
+        MAX_ZIP_SIZE,
+        "-b",
+        split_path,
+        z,
+    ]
+    try:
+        zipsplit = local["/usr/bin/zipsplit"]
+        zipsplit(split_params)
+
+        log.info("{}: split completed", path)
+
+        return z, list(split_path.glob("*.zip"))
+    except ProcessExecutionError as e:
+
+        if "Entry is larger than max split size" in e.stdout:
+            reg = r"Entry too big to split, read, or write \((.*)\)"
+            extra = None
+            if m := re.search(reg, e.stdout):
+                extra = m.group(1)
+            # ErrorCodes.ZIP_SPLIT_ENTRY_TOO_LARGE
+            log.error("{}: entry is larger than max split size: {}", path, extra)
+        else:
+            # ErrorCodes.ZIP_SPLIT_ERROR
+            log.error("{}: {}", path, e.stdout)
+
+        return z, []
+
+
 @CeleryExt.task()
 def make_order(
     self: Task,
@@ -184,79 +248,23 @@ def make_order(
         lock.touch(exist_ok=False)
 
         try:
-            # Argument "base_name" to "make_archive" has incompatible type "Path";
-            # expected "str"
-            shutil.make_archive(base_name=str(zip_file), format="zip", root_dir=cache)
 
-            MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
+            whole_zip, zip_chunks = make_zip_archives(path, zip_file, cache)
 
-            z = zip_file.with_suffix(".zip")
-            size = z.stat().st_size
-            if size > MAX_ZIP_SIZE:
+            if zip_chunks:
 
-                log.warning(
-                    "{}: zip too large, splitting {} (size {}, maxsize {})",
-                    path,
-                    z,
-                    size,
-                    MAX_ZIP_SIZE,
-                )
+                log.info("{}: split completed, moving files", path)
+                # remove the whole zip to save space
+                # and move all split zips on the main folder
+                whole_zip.unlink()
 
-                # Create a sub folder for split files. If already exists,
-                # remove it to start from a clean environment
-                split_path = path.joinpath("zip_split")
+                for f in zip_chunks:
 
-                if split_path.exists():
-                    shutil.rmtree(split_path)
+                    p = f.absolute()
+                    parent_dir = p.parents[1]
+                    p.rename(parent_dir.joinpath(p.name))
 
-                split_path.mkdir(exist_ok=True)
-
-                # Execute the split of the zip
-                split_params = [
-                    "-n",
-                    MAX_ZIP_SIZE,
-                    "-b",
-                    split_path,
-                    z,
-                ]
-                try:
-                    zipsplit = local["/usr/bin/zipsplit"]
-                    zipsplit(split_params)
-                    log.info("{}: split completed, moving files", path)
-                    # remove the whole zip to save space
-                    # and move all split zip on the main folder.
-                    # Then, remove the zip_split folder
-                    z.unlink()
-
-                    for f in split_path.glob("*.zip"):
-
-                        p = f.absolute()
-                        parent_dir = p.parents[1]
-                        p.rename(parent_dir.joinpath(p.name))
-
-                    shutil.rmtree(split_path)
-                    log.warning("{}: split completed", path)
-                except ProcessExecutionError as e:
-
-                    if "Entry is larger than max split size" in e.stdout:
-                        reg = r"Entry too big to split, read, or write \((.*)\)"
-                        extra = None
-                        if m := re.search(reg, e.stdout):
-                            extra = m.group(1)
-                        # ErrorCodes.ZIP_SPLIT_ENTRY_TOO_LARGE
-                        log.error(
-                            "{}: entry is larger than max split size: {}", path, extra
-                        )
-                    else:
-                        # ErrorCodes.ZIP_SPLIT_ERROR
-                        log.error("{}: {}", path, e.stdout)
-            # else:
-            #     log.critical(
-            #         "DEBUG CODE: {}, size {}, maxsize {}",
-            #         z,
-            #         size,
-            #         MAX_ZIP_SIZE,
-            #     )
+                log.warning("{}: split completed", path)
 
             lock.unlink()
         # should never happens, but is added to ensure no problems with lock release
