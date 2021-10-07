@@ -74,6 +74,14 @@ class TestApp(BaseTests):
         verify_zip(z, num_files=1)
 
         # 4 - Make an archive larger then max size => enable split
+        # f1 already deleted in a previous step
+        # now also delete f2 and keep only the two large files
+        # And prevent any ambiguities due to the random selection of the chunk that
+        # will contain the small file:
+        # chunk1=(small + large1) and chunk2=(large2)
+        # or:
+        # chunk1=(large1) and chunk2=(small + large2)
+        f2.unlink()
         MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
         HALF_SIZE = math.ceil(MAX_ZIP_SIZE / 2)
 
@@ -87,17 +95,13 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 2
-        verify_zip(z, num_files=3)
+        verify_zip(z, num_files=2)
         z1 = split_path.joinpath("output1.zip")
         z2 = split_path.joinpath("output2.zip")
-        verify_zip(z1, num_files=2)
+        verify_zip(z1, num_files=1)
         verify_zip(z2, num_files=1)
 
         # 5 - Make an archive with even more files
-        # f1 already deleted in a previous step
-        # now also delete f2 and only keep two large files
-        # two already created and additional two creating now
-        f2.unlink()
         f5 = cache.joinpath(faker.pystr())
         f6 = cache.joinpath(faker.pystr())
 
