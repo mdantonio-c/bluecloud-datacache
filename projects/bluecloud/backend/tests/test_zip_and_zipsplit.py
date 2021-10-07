@@ -57,8 +57,8 @@ class TestApp(BaseTests):
         verify_zip(z, valid=True, num_files=0)
 
         # 2 - Make an archive from two files
-        f1 = cache.joinpathh(faker.pystr())
-        f2 = cache.joinpathh(faker.pystr())
+        f1 = cache.joinpath(faker.pystr())
+        f2 = cache.joinpath(faker.pystr())
         create_file(f1, size=1024)
         create_file(f2, size=1024)
 
@@ -80,8 +80,8 @@ class TestApp(BaseTests):
         MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
         HALF_SIZE = math.ceil(MAX_ZIP_SIZE / 2)
 
-        f3 = cache.joinpathh(faker.pystr())
-        f4 = cache.joinpathh(faker.pystr())
+        f3 = cache.joinpath(faker.pystr())
+        f4 = cache.joinpath(faker.pystr())
 
         create_file(f3, size=HALF_SIZE)
         create_file(f4, size=HALF_SIZE)
@@ -95,8 +95,8 @@ class TestApp(BaseTests):
         # 5 - Make an archive with even more files
         MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
 
-        f5 = cache.joinpathh(faker.pystr())
-        f6 = cache.joinpathh(faker.pystr())
+        f5 = cache.joinpath(faker.pystr())
+        f6 = cache.joinpath(faker.pystr())
 
         create_file(f5, size=HALF_SIZE)
         create_file(f6, size=HALF_SIZE)
