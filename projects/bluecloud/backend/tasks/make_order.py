@@ -4,6 +4,7 @@ import re
 import shutil
 import socket
 import time
+import zipfile
 from pathlib import Path
 from typing import List, Optional, Tuple, TypedDict
 from urllib.parse import urlparse
@@ -100,68 +101,155 @@ def ftp_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
     return None
 
 
+def count_files(z: Path) -> int:
+    try:
+        with zipfile.ZipFile(z, "r") as myzip:
+            return len(myzip.infolist())
+    except zipfile.BadZipFile:  # pragma: no cover
+        return 0
+
+
 def make_zip_archives(
-    path: Path, zip_file: Path, outdir: Path
+    path: Path, zip_file: Path, datadir: Path
 ) -> Tuple[Path, List[Path]]:
-
-    # Argument "base_name" to "make_archive" has incompatible type "Path";
-    # expected "str"
-    shutil.make_archive(base_name=str(zip_file), format="zip", root_dir=outdir)
-
-    z = zip_file.with_suffix(".zip")
 
     MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
 
-    size = z.stat().st_size
-    if size < MAX_ZIP_SIZE:
-        return z, []
+    oversize_cache = datadir.parent.joinpath("cache_oversize")
+    # Move any over-size file in the oversize cache
+    for f in datadir.glob("*"):
+        if f.stat().st_size > MAX_ZIP_SIZE:
+            if not oversize_cache.exists():
+                oversize_cache.mkdir()
+            log.warning("Too large file found: {}, moving to oversize cache", f)
+            f.rename(oversize_cache.joinpath(f.name))
 
-    log.warning(
-        "{}: zip too large, splitting {} (size {}, maxsize {})",
-        path,
-        z,
-        size,
-        MAX_ZIP_SIZE,
-    )
-
-    # Create a sub folder for split files. If already exists,
-    # remove it to start from a clean environment
+    # Delete the split folder if already exists and create it,
+    # This way the split will always start from a clean environment
     split_path = path.joinpath("zip_split")
 
     if split_path.exists():
         shutil.rmtree(split_path)
+    split_path.mkdir()
 
-    split_path.mkdir(exist_ok=True)
+    shutil.make_archive(base_name=str(zip_file), format="zip", root_dir=datadir)
 
-    # Execute the split of the zip
-    split_params = [
-        "-n",
-        MAX_ZIP_SIZE,
-        "-b",
-        split_path,
-        z,
-    ]
-    try:
-        zipsplit = local["/usr/bin/zipsplit"]
-        zipsplit(split_params)
+    z = zip_file.with_suffix(".zip")
 
-        log.info("{}: split completed", path)
+    size = z.stat().st_size
 
-        return z, list(split_path.glob("*.zip"))
-    except ProcessExecutionError as e:
+    zip_chunks: List[Path] = []
+    if size > MAX_ZIP_SIZE:
 
-        if "Entry is larger than max split size" in e.stdout:
-            reg = r"Entry too big to split, read, or write \((.*)\)"
-            extra = None
-            if m := re.search(reg, e.stdout):
-                extra = m.group(1)
-            # ErrorCodes.ZIP_SPLIT_ENTRY_TOO_LARGE
-            log.error("{}: entry is larger than max split size: {}", path, extra)
-        else:
-            # ErrorCodes.ZIP_SPLIT_ERROR
-            log.error("{}: {}", path, e.stdout)
+        log.warning(
+            "{}: zip too large, splitting {} (size {}, maxsize {})",
+            path,
+            z,
+            size,
+            MAX_ZIP_SIZE,
+        )
 
+        # Execute the split of the zip
+        split_params = [
+            "-n",
+            MAX_ZIP_SIZE,
+            "-b",
+            split_path,
+            z,
+        ]
+        try:
+            zipsplit = local["/usr/bin/zipsplit"]
+            zipsplit(split_params)
+
+            log.info("{}: split completed", path)
+
+            zip_chunks = list(split_path.glob("*.zip"))
+        except ProcessExecutionError as e:
+
+            if "Entry is larger than max split size" in e.stdout:
+                reg = r"Entry too big to split, read, or write \((.*)\)"
+                extra = None
+                if m := re.search(reg, e.stdout):
+                    extra = m.group(1)
+                # ErrorCodes.ZIP_SPLIT_ENTRY_TOO_LARGE
+                log.error("{}: entry is larger than max split size: {}", path, extra)
+            else:
+                # ErrorCodes.ZIP_SPLIT_ERROR
+                log.error("{}: {}", path, e.stdout)
+
+            return z, []
+
+    oversize_cache_list = list(oversize_cache.glob("*"))
+
+    # One or more over-size file have to added to the output
+    # They are not included in the normal zip & zipsplit workflow
+    # Because zipsplit would fail when the zip file contains a file larger then MAX_SIZE
+    if oversize_cache_list:
+
+        index = len(zip_chunks)
+
+        if index == 0:
+            # chunks are ZERO => zipsplit not executed and output.zip
+            # is to be considered as chunk 1
+            # BUT only if it is not empty
+            if count_files(z) > 0:
+                chunk_path = split_path.joinpath("output1.zip")
+                z.rename(chunk_path)
+                zip_chunks.append(chunk_path)
+                index = 1
+
+        for f in oversize_cache_list:
+            # Can't safely go outside the loop because if the order does not contain
+            # any over size file then the oversize_cache folder does not exist
+            tmp_dir = oversize_cache.joinpath("tmp")
+            tmp_dir.mkdir(exist_ok=True)
+            index += 1
+            chunk_path = split_path.joinpath(f"output{index}")
+            # make_archive can't create an archive from file, but only from a folder...
+            tmp_file = tmp_dir.joinpath(f.name)
+            f.rename(tmp_file)
+            shutil.make_archive(
+                base_name=str(chunk_path), format="zip", root_dir=tmp_dir
+            )
+            # move back the file on the oversize_cache cache
+            tmp_file.rename(f)
+
+            shutil.rmtree(tmp_dir)
+            zip_chunks.append(chunk_path.with_suffix(".zip"))
+
+    if zip_chunks:
+
+        log.info("{}: split completed, moving files", path)
+        # remove the whole zip to save space
+        # and move all split zips on the main folder
+        # Note that the whole zip may not exist in the case of small zip (so not split)
+        # and a too-large file. In this case the whole zip is moved as chunk1
+        if z.exists():
+            z.unlink()
+
+        for f in zip_chunks:
+
+            p = f.absolute()
+            parent_dir = p.parents[1]
+            p.rename(parent_dir.joinpath(p.name))
+
+        log.warning("{}: split completed", path)
+
+    # Just a final check to verify how many chunks we have
+    # In case of a single too large file the current situation would be:
+    # output.zip empty because no normal files have been merged
+    # cache empty
+    # zip path empty
+    # oversize cache contains 1 file archived in output1.zip
+    # In this very specific case output1.zip has to be renamed into output.zip
+    output1 = path.joinpath("output1.zip")
+    output2 = path.joinpath("output2.zip")
+    # not that len(zip_chunks) == 1 is redundant, but added for a safer check
+    if output1.exists() and not output2.exists() and len(zip_chunks) == 1:
+        output1.rename(z)
         return z, []
+
+    return z, zip_chunks
 
 
 @CeleryExt.task()
@@ -250,21 +338,6 @@ def make_order(
         try:
 
             whole_zip, zip_chunks = make_zip_archives(path, zip_file, cache)
-
-            if zip_chunks:
-
-                log.info("{}: split completed, moving files", path)
-                # remove the whole zip to save space
-                # and move all split zips on the main folder
-                whole_zip.unlink()
-
-                for f in zip_chunks:
-
-                    p = f.absolute()
-                    parent_dir = p.parents[1]
-                    p.rename(parent_dir.joinpath(p.name))
-
-                log.warning("{}: split completed", path)
 
             lock.unlink()
         # should never happens, but it is added to prevent problems with lock release
