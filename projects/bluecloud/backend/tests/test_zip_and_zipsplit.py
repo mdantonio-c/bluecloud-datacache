@@ -94,6 +94,10 @@ class TestApp(BaseTests):
         verify_zip(z2, num_files=1)
 
         # 5 - Make an archive with even more files
+        # f1 already deleted in a previous step
+        # now also delete f2 and only keep two large files
+        # two already created and additional two creating now
+        f2.unlink()
         f5 = cache.joinpath(faker.pystr())
         f6 = cache.joinpath(faker.pystr())
 
@@ -104,12 +108,12 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 4
-        verify_zip(z, num_files=5)
+        verify_zip(z, num_files=4)
         z1 = split_path.joinpath("output1.zip")
         z2 = split_path.joinpath("output2.zip")
         z3 = split_path.joinpath("output3.zip")
         z4 = split_path.joinpath("output4.zip")
-        verify_zip(z1, num_files=2)
+        verify_zip(z1, num_files=1)
         verify_zip(z2, num_files=1)
         verify_zip(z3, num_files=1)
         verify_zip(z4, num_files=1)
@@ -123,13 +127,14 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 5
-        verify_zip(z, num_files=6)
+        verify_zip(z, num_files=5)
         z1 = split_path.joinpath("output1.zip")
         z2 = split_path.joinpath("output2.zip")
         z3 = split_path.joinpath("output3.zip")
         z4 = split_path.joinpath("output4.zip")
-        z5 = split_path.joinpath("output4.zip")
-        verify_zip(z1, num_files=2)
+        # This last zip will contains the too-large file
+        z5 = split_path.joinpath("output5.zip")
+        verify_zip(z1, num_files=1)
         verify_zip(z2, num_files=1)
         verify_zip(z3, num_files=1)
         verify_zip(z4, num_files=1)
@@ -139,4 +144,5 @@ class TestApp(BaseTests):
         assert z2.stat().st_size < MAX_ZIP_SIZE
         assert z3.stat().st_size < MAX_ZIP_SIZE
         assert z4.stat().st_size < MAX_ZIP_SIZE
+        # Please note that z5 is larger than MAX_ZIP_SIZE
         assert z5.stat().st_size > MAX_ZIP_SIZE
