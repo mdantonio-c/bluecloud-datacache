@@ -82,9 +82,9 @@ def http_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
     return None
 
 
-def ftp_download(  # pragma: no cover
+def ftp_download(
     url: str, out_path: Path
-) -> Optional[Tuple[str, str]]:
+) -> Optional[Tuple[str, str]]:  # pragma: no cover
 
     try:
         parsed = urlparse(url)
