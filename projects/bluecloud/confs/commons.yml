@@ -4,6 +4,7 @@ services:
   backend:
     environment:
       MARIS_EXTERNAL_API_SERVER: ${MARIS_EXTERNAL_API_SERVER}
+      MAX_ZIP_SIZE: ${MAX_ZIP_SIZE}
 
   celery:
     environment:
