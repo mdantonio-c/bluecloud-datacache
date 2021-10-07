@@ -40,6 +40,8 @@ class TestApp(BaseTests):
         # zip filename without .zip extension
         zip_file = path.joinpath("output")
         cache = path.joinpath("cache")
+        # This the output of chunked zips, as defined in make_order.make_zip_archives()
+        split_path = path.joinpath("zip_split")
 
         path.mkdir(exist_ok=True)
         cache.mkdir(exist_ok=True)
@@ -86,8 +88,8 @@ class TestApp(BaseTests):
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 2
         verify_zip(z, num_files=3)
-        z1 = cache.joinpath("output1.zip")
-        z2 = cache.joinpath("output2.zip")
+        z1 = split_path.joinpath("output1.zip")
+        z2 = split_path.joinpath("output2.zip")
         verify_zip(z1, num_files=2)
         verify_zip(z2, num_files=1)
 
@@ -103,10 +105,10 @@ class TestApp(BaseTests):
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 4
         verify_zip(z, num_files=5)
-        z1 = cache.joinpath("output1.zip")
-        z2 = cache.joinpath("output2.zip")
-        z3 = cache.joinpath("output3.zip")
-        z4 = cache.joinpath("output4.zip")
+        z1 = split_path.joinpath("output1.zip")
+        z2 = split_path.joinpath("output2.zip")
+        z3 = split_path.joinpath("output3.zip")
+        z4 = split_path.joinpath("output4.zip")
         verify_zip(z1, num_files=2)
         verify_zip(z2, num_files=1)
         verify_zip(z3, num_files=1)
@@ -122,11 +124,11 @@ class TestApp(BaseTests):
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 5
         verify_zip(z, num_files=6)
-        z1 = cache.joinpath("output1.zip")
-        z2 = cache.joinpath("output2.zip")
-        z3 = cache.joinpath("output3.zip")
-        z4 = cache.joinpath("output4.zip")
-        z5 = cache.joinpath("output4.zip")
+        z1 = split_path.joinpath("output1.zip")
+        z2 = split_path.joinpath("output2.zip")
+        z3 = split_path.joinpath("output3.zip")
+        z4 = split_path.joinpath("output4.zip")
+        z5 = split_path.joinpath("output4.zip")
         verify_zip(z1, num_files=2)
         verify_zip(z2, num_files=1)
         verify_zip(z3, num_files=1)
