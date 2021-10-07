@@ -85,11 +85,11 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 2
-        verify_zip(z, num_files=4)
+        verify_zip(z, num_files=3)
         z1 = cache.joinpath("output1.zip")
         z2 = cache.joinpath("output2.zip")
         verify_zip(z1, num_files=2)
-        verify_zip(z2, num_files=2)
+        verify_zip(z2, num_files=1)
 
         # 5 - Make an archive with even more files
         f5 = cache.joinpath(faker.pystr())
