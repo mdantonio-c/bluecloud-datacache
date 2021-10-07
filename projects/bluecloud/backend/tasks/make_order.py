@@ -267,7 +267,7 @@ def make_order(
                 log.warning("{}: split completed", path)
 
             lock.unlink()
-        # should never happens, but is added to ensure no problems with lock release
+        # should never happens, but it is added to prevent problems with lock release
         except Exception as e:  # pragma: no cover
             log.error("{}: {}", path, e)
             lock.unlink()

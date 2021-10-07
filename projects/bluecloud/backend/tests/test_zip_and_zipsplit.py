@@ -85,7 +85,7 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 2
-        assert not z.exists()
+        verify_zip(z, num_files=4)
         z1 = cache.joinpath("output1.zip")
         z2 = cache.joinpath("output2.zip")
         verify_zip(z1, num_files=2)
@@ -102,7 +102,7 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 4
-        assert not z.exists()
+        verify_zip(z, num_files=5)
         z1 = cache.joinpath("output1.zip")
         z2 = cache.joinpath("output2.zip")
         z3 = cache.joinpath("output3.zip")
@@ -121,7 +121,7 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 5
-        assert not z.exists()
+        verify_zip(z, num_files=6)
         z1 = cache.joinpath("output1.zip")
         z2 = cache.joinpath("output2.zip")
         z3 = cache.joinpath("output3.zip")
