@@ -82,7 +82,9 @@ def http_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
     return None
 
 
-def ftp_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
+def ftp_download(  # pragma: no cover
+    url: str, out_path: Path
+) -> Optional[Tuple[str, str]]:
 
     try:
         parsed = urlparse(url)
@@ -164,7 +166,9 @@ def make_zip_archives(
             log.info("{}: split completed", path)
 
             zip_chunks = list(split_path.glob("*.zip"))
-        except ProcessExecutionError as e:
+        # This can no longer happens because large entries are removed from the zip
+        # Added re-added after the split with a separated workflow
+        except ProcessExecutionError as e:  # pragma: no cover
 
             if "Entry is larger than max split size" in e.stdout:
                 reg = r"Entry too big to split, read, or write \((.*)\)"
@@ -298,7 +302,7 @@ def make_order(
             local_path = cache.joinpath(filename)
 
             if download_url.startswith("ftp://"):
-                error = ftp_download(download_url, local_path)
+                error = ftp_download(download_url, local_path)  # pragma: no cover
             else:
                 error = http_download(download_url, local_path)
 
