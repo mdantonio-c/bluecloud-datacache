@@ -13,22 +13,17 @@ from restapi.tests import BaseTests
 TASK_NAME = "make_order"
 
 
-def verify_zip(z: Path, valid: bool = True, num_files: int = 0) -> None:
+def verify_zip(z: Path, num_files: int = 0) -> None:
     assert z.exists()
 
     try:
         with zipfile.ZipFile(z, "r") as myzip:
             errors = myzip.testzip()
-
-            if valid:
-                assert errors is None
-            else:
-                assert errors is not None
+            assert errors is None
 
             assert len(myzip.infolist()) == num_files
     except zipfile.BadZipFile as e:  # pragma: no cover
-        if valid:
-            pytest.fail(str(e))
+        pytest.fail(str(e))
 
 
 def create_file(file: Path, size: int = 1024) -> Path:
@@ -54,7 +49,7 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 0
-        verify_zip(z, valid=True, num_files=0)
+        verify_zip(z, num_files=0)
 
         # 2 - Make an archive from two files
         f1 = cache.joinpath(faker.pystr())
@@ -66,7 +61,7 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 0
-        verify_zip(z, valid=True, num_files=2)
+        verify_zip(z, num_files=2)
 
         # 3 - Make an archive from one file (previos - one deleted)
         f1.unlink()
@@ -74,7 +69,7 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 0
-        verify_zip(z, valid=True, num_files=1)
+        verify_zip(z, num_files=1)
 
         # 4 - Make an archive larger then max size => enable split
         MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
@@ -90,11 +85,13 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 2
-        verify_zip(z, valid=True, num_files=3)
+        assert not z.exists()
+        z1 = cache.joinpath("output1.zip")
+        z2 = cache.joinpath("output2.zip")
+        verify_zip(z1, num_files=2)
+        verify_zip(z2, num_files=2)
 
         # 5 - Make an archive with even more files
-        MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
-
         f5 = cache.joinpath(faker.pystr())
         f6 = cache.joinpath(faker.pystr())
 
@@ -104,5 +101,40 @@ class TestApp(BaseTests):
         z, chunks = make_zip_archives(path, zip_file, cache)
 
         assert z == zip_file.with_suffix(".zip")
-        assert len(chunks) == 3
-        verify_zip(z, valid=True, num_files=5)
+        assert len(chunks) == 4
+        assert not z.exists()
+        z1 = cache.joinpath("output1.zip")
+        z2 = cache.joinpath("output2.zip")
+        z3 = cache.joinpath("output3.zip")
+        z4 = cache.joinpath("output4.zip")
+        verify_zip(z1, num_files=2)
+        verify_zip(z2, num_files=1)
+        verify_zip(z3, num_files=1)
+        verify_zip(z4, num_files=1)
+
+        # 6 - Make an archive with a file larger than the MAX ZIP SIZE
+        f7 = cache.joinpath(faker.pystr())
+
+        create_file(f7, size=MAX_ZIP_SIZE * 2)
+
+        z, chunks = make_zip_archives(path, zip_file, cache)
+
+        assert z == zip_file.with_suffix(".zip")
+        assert len(chunks) == 5
+        assert not z.exists()
+        z1 = cache.joinpath("output1.zip")
+        z2 = cache.joinpath("output2.zip")
+        z3 = cache.joinpath("output3.zip")
+        z4 = cache.joinpath("output4.zip")
+        z5 = cache.joinpath("output4.zip")
+        verify_zip(z1, num_files=2)
+        verify_zip(z2, num_files=1)
+        verify_zip(z3, num_files=1)
+        verify_zip(z4, num_files=1)
+        verify_zip(z5, num_files=1)
+
+        assert z1.stat().st_size < MAX_ZIP_SIZE
+        assert z2.stat().st_size < MAX_ZIP_SIZE
+        assert z3.stat().st_size < MAX_ZIP_SIZE
+        assert z4.stat().st_size < MAX_ZIP_SIZE
+        assert z5.stat().st_size > MAX_ZIP_SIZE
