@@ -1,3 +1,4 @@
+import math
 import os
 import tempfile
 import zipfile
@@ -12,7 +13,7 @@ from restapi.tests import BaseTests
 TASK_NAME = "make_order"
 
 
-def verify_zip(z: Path, valid=True, num_files=0) -> None:
+def verify_zip(z: Path, valid: bool = True, num_files: int = 0) -> None:
     assert z.exists()
 
     try:
@@ -24,7 +25,7 @@ def verify_zip(z: Path, valid=True, num_files=0) -> None:
             else:
                 assert errors is not None
 
-            assert len(myzip.infolist) == num_files
+            assert len(myzip.infolist()) == num_files
     except zipfile.BadZipFile as e:  # pragma: no cover
         if valid:
             pytest.fail(str(e))
@@ -45,6 +46,9 @@ class TestApp(BaseTests):
         zip_file = path.joinpath("output")
         cache = path.joinpath("cache")
 
+        path.mkdir(exist_ok=True)
+        cache.mkdir(exist_ok=True)
+
         # 1 - Make an archive from an empty folder
         z, chunks = make_zip_archives(path, zip_file, cache)
 
@@ -53,8 +57,8 @@ class TestApp(BaseTests):
         verify_zip(z, valid=True, num_files=0)
 
         # 2 - Make an archive from two files
-        f1 = path.joinpath(faker.pystr())
-        f2 = path.joinpath(faker.pystr())
+        f1 = cache.joinpathh(faker.pystr())
+        f2 = cache.joinpathh(faker.pystr())
         create_file(f1, size=1024)
         create_file(f2, size=1024)
 
@@ -74,12 +78,13 @@ class TestApp(BaseTests):
 
         # 4 - Make an archive larger then max size => enable split
         MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
+        HALF_SIZE = math.ceil(MAX_ZIP_SIZE / 2)
 
-        f3 = path.joinpath(faker.pystr())
-        f4 = path.joinpath(faker.pystr())
+        f3 = cache.joinpathh(faker.pystr())
+        f4 = cache.joinpathh(faker.pystr())
 
-        create_file(f3, size=MAX_ZIP_SIZE / 2)
-        create_file(f4, size=MAX_ZIP_SIZE / 2)
+        create_file(f3, size=HALF_SIZE)
+        create_file(f4, size=HALF_SIZE)
 
         z, chunks = make_zip_archives(path, zip_file, cache)
 
@@ -90,11 +95,11 @@ class TestApp(BaseTests):
         # 5 - Make an archive with even more files
         MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
 
-        f5 = path.joinpath(faker.pystr())
-        f6 = path.joinpath(faker.pystr())
+        f5 = cache.joinpathh(faker.pystr())
+        f6 = cache.joinpathh(faker.pystr())
 
-        create_file(f5, size=MAX_ZIP_SIZE / 2)
-        create_file(f6, size=MAX_ZIP_SIZE / 2)
+        create_file(f5, size=HALF_SIZE)
+        create_file(f6, size=HALF_SIZE)
 
         z, chunks = make_zip_archives(path, zip_file, cache)
 
