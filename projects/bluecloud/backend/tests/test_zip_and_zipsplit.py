@@ -32,7 +32,7 @@ def create_file(file: Path, size: int = 1024) -> Path:
     return file
 
 
-# Please note that MAX_ZIP_SIZE is fixed to 204800 during tests
+# Please note that MAX_ZIP_SIZE is fixed to 262144 during tests
 
 
 class TestApp(BaseTests):

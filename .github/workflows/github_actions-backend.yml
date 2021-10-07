@@ -27,7 +27,7 @@ jobs:
       - name: Run Pytest
         run: |
 
-          rapydo --testing -e MARIS_EXTERNAL_API_SERVER=not-used -e MAX_ZIP_SIZE=204800 -e LOCK_SLEEP_TIME=1 init --force
+          rapydo --testing -e MARIS_EXTERNAL_API_SERVER=not-used -e MAX_ZIP_SIZE=262144 -e LOCK_SLEEP_TIME=1 init --force
           rapydo pull --quiet
           # Added just to be prepared if a custom build is added 
           rapydo build
@@ -54,7 +54,7 @@ jobs:
         run: |
 
           rapydo remove --all
-          rapydo --prod -e MARIS_EXTERNAL_API_SERVER=not-used -e MAX_ZIP_SIZE=204800 -e LOCK_SLEEP_TIME=1 init --force
+          rapydo --prod -e MARIS_EXTERNAL_API_SERVER=not-used -e MAX_ZIP_SIZE=262144 -e LOCK_SLEEP_TIME=1 init --force
 
           rapydo pull --quiet
           rapydo ssl --volatile
