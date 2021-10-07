@@ -10,7 +10,7 @@ from restapi.tests import BaseTests
 TASK_NAME = "make_order"
 
 
-def test_zip(z: Path, valid=True, num_files=0) -> None:
+def verify_zip(z: Path, valid=True, num_files=0) -> None:
     assert z.exists()
 
     try:
@@ -41,4 +41,4 @@ class TestApp(BaseTests):
         z, chunks = make_zip_archives(path, zip_file, cache)
 
         assert z == zip_file.with_suffix(".zip")
-        test_zip(z, valid=True, num_files=0)
+        verify_zip(z, valid=True, num_files=0)
