@@ -21,7 +21,7 @@ from restapi.exceptions import NotFound
 from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
 
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # type: ignore
 
 
 class DownloadError(TypedDict):
