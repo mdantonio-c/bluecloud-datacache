@@ -310,3 +310,100 @@ class TestApp(BaseTests):
         # Please note that both are larger than MAX_ZIP_SIZE
         assert z1.stat().st_size > MAX_ZIP_SIZE
         assert z2.stat().st_size > MAX_ZIP_SIZE
+
+    def test_zip_merge_small_files(self, faker: Faker) -> None:
+        # Make an archive from one file and then add a second file
+
+        path = Path(tempfile.gettempdir(), faker.pystr())
+        # zip filename without .zip extension
+        zip_file = path.joinpath("output")
+        cache = path.joinpath("cache")
+
+        path.mkdir(exist_ok=True)
+        cache.mkdir(exist_ok=True)
+
+        f1 = cache.joinpath(faker.pystr())
+        create_file(f1, size=1024)
+
+        z, chunks = make_zip_archives(path, zip_file, cache)
+
+        assert z == zip_file.with_suffix(".zip")
+        assert len(chunks) == 0
+        verify_zip(z, num_files=1)
+
+        f2 = cache.joinpath(faker.pystr())
+        create_file(f2, size=1024)
+
+        z, chunks = make_zip_archives(path, zip_file, cache)
+
+        assert z == zip_file.with_suffix(".zip")
+        assert len(chunks) == 0
+        verify_zip(z, num_files=2)
+
+    def test_zip_merge_large_files(self, faker: Faker) -> None:
+        # Make an archive from 2 file and then add other 2 files
+
+        path = Path(tempfile.gettempdir(), faker.pystr())
+        # zip filename without .zip extension
+        zip_file = path.joinpath("output")
+        cache = path.joinpath("cache")
+
+        MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
+        HALF_SIZE = math.ceil(MAX_ZIP_SIZE / 2)
+
+        path.mkdir(exist_ok=True)
+        cache.mkdir(exist_ok=True)
+
+        f1 = cache.joinpath(faker.pystr())
+        f2 = cache.joinpath(faker.pystr())
+
+        create_file(f1, size=HALF_SIZE)
+        create_file(f2, size=HALF_SIZE)
+
+        z, chunks = make_zip_archives(path, zip_file, cache)
+
+        assert z == zip_file.with_suffix(".zip")
+        assert len(chunks) == 2
+        verify_zip(z, num_files=1)
+
+        f2 = cache.joinpath(faker.pystr())
+        create_file(f2, size=1024)
+
+        z, chunks = make_zip_archives(path, zip_file, cache)
+
+        assert z == zip_file.with_suffix(".zip")
+        assert len(chunks) == 2
+        assert not z.exists()
+        z1 = path.joinpath("output1.zip")
+        z2 = path.joinpath("output2.zip")
+        verify_zip(z1, num_files=1)
+        verify_zip(z2, num_files=1)
+
+        f3 = cache.joinpath(faker.pystr())
+        f4 = cache.joinpath(faker.pystr())
+
+        create_file(f3, size=HALF_SIZE)
+        create_file(f4, size=HALF_SIZE)
+
+        z, chunks = make_zip_archives(path, zip_file, cache)
+
+        assert z == zip_file.with_suffix(".zip")
+        assert len(chunks) == 4
+        verify_zip(z, num_files=1)
+
+        f2 = cache.joinpath(faker.pystr())
+        create_file(f2, size=1024)
+
+        z, chunks = make_zip_archives(path, zip_file, cache)
+
+        assert z == zip_file.with_suffix(".zip")
+        assert len(chunks) == 2
+        assert not z.exists()
+        z1 = path.joinpath("output1.zip")
+        z2 = path.joinpath("output2.zip")
+        z3 = path.joinpath("output3.zip")
+        z4 = path.joinpath("output4.zip")
+        verify_zip(z1, num_files=1)
+        verify_zip(z2, num_files=1)
+        verify_zip(z3, num_files=1)
+        verify_zip(z4, num_files=1)
