@@ -62,7 +62,7 @@ def http_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
             headers=DOWNLOAD_HEADERS,
         )
 
-        if r.status_code != 200:
+        if r.status_code != 200:  # pragma: no cover
             log.error("Invalid response from {}: {}", url, r.status_code)
 
             return ErrorCodes.INVALID_RESPONSE
