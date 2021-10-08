@@ -364,15 +364,6 @@ class TestApp(BaseTests):
 
         assert z == zip_file.with_suffix(".zip")
         assert len(chunks) == 2
-        verify_zip(z, num_files=1)
-
-        f2 = cache.joinpath(faker.pystr())
-        create_file(f2, size=1024)
-
-        z, chunks = make_zip_archives(path, zip_file, cache)
-
-        assert z == zip_file.with_suffix(".zip")
-        assert len(chunks) == 2
         assert not z.exists()
         z1 = path.joinpath("output1.zip")
         z2 = path.joinpath("output2.zip")
@@ -384,15 +375,6 @@ class TestApp(BaseTests):
 
         create_file(f3, size=HALF_SIZE)
         create_file(f4, size=HALF_SIZE)
-
-        z, chunks = make_zip_archives(path, zip_file, cache)
-
-        assert z == zip_file.with_suffix(".zip")
-        assert len(chunks) == 4
-        verify_zip(z, num_files=1)
-
-        f2 = cache.joinpath(faker.pystr())
-        create_file(f2, size=1024)
 
         z, chunks = make_zip_archives(path, zip_file, cache)
 
