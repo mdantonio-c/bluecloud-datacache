@@ -379,7 +379,7 @@ class TestApp(BaseTests):
         z, chunks = make_zip_archives(path, zip_file, cache)
 
         assert z == zip_file.with_suffix(".zip")
-        assert len(chunks) == 2
+        assert len(chunks) == 4
         assert not z.exists()
         z1 = path.joinpath("output1.zip")
         z2 = path.joinpath("output2.zip")
