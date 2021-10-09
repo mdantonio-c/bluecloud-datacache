@@ -29,28 +29,28 @@ class Download(EndpointResource):
             log.error(e)
             raise Unauthorized("Provided token is invalid")
 
-        # zippath is /uploads/MARINE-ID/ORDER-NUMER/FILE.zip
+        # == /uploads/MARINE-ID/ORDER-NUMER/FILE.zip
         zippath = UPLOAD_PATH.joinpath(path)
+        zip_filename = zippath.name
+        # == /uploads/MARINE-ID/ORDER-NUMER
+        subfolder = zippath.parent
+        order_num = subfolder.name
 
-        # .parent /uploads/MARINE-ID/ORDER-NUMER
-        # .name ORDER-NUMER
-        order_num = zippath.parent.name
         # single zip
-        if zippath.name == "output.zip":
+        if zip_filename == "output.zip":
             filename = f"Blue-Cloud_order_{order_num}.zip"
         # split zip
         else:
-            m = re.search(r"output([0-9]+).zip", zippath.name)
+            m = re.search(r"output([0-9]+).zip", zip_filename)
             if m:
                 zip_number = m.group(1)
             else:  # pragma: no cover
-                log.error("Can't extract zip number from {}", zippath.name)
+                log.error("Can't extract zip number from {}", zip_filename)
                 zip_number = "0"
             filename = f"Blue-Cloud_order_{order_num}_{zip_number}.zip"
 
-        if not zippath.exists():
-            raise NotFound("Requested file does not exist")
-
         log.info("Request download for path: {}", zippath)
 
-        return Downloader.send_file_streamed(zippath, out_filename=filename)
+        return Downloader.send_file_streamed(
+            zip_filename, subfolder=subfolder, out_filename=filename
+        )
