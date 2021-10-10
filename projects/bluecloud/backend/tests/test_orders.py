@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional, Type, TypeVar
 
 import pytest
 from faker import Faker
-from restapi.services.uploader import Uploader
+from restapi.config import UPLOAD_PATH
 from restapi.tests import API_URI, BaseTests, FlaskClient
 
 T = TypeVar("T", bound="TemporaryRemovePath")
@@ -325,7 +325,7 @@ class TestApp(BaseTests):
 
         # Now the order should be completed, let's verify the result:
 
-        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+        path = UPLOAD_PATH.joinpath(marine_id, order_number)
 
         assert path.exists()
 
@@ -596,7 +596,7 @@ class TestApp(BaseTests):
         # This order is created by merging exactly the same file of the first order
         # but not sequentially, i.e. with concurrent jobs
         # Expected zip size is exactly the size of the first
-        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+        path = UPLOAD_PATH.joinpath(marine_id, order_number)
 
         assert path.exists()
 
@@ -676,7 +676,7 @@ class TestApp(BaseTests):
         r = client.get(download_url["url"])
         assert r.status_code == 200
 
-        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+        path = UPLOAD_PATH.joinpath(marine_id, order_number)
 
         assert path.exists()
 

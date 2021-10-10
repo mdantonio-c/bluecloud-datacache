@@ -1,9 +1,8 @@
 from pathlib import Path
 
-# from typing import Any, Dict, Optional, Type, TypeVar
 from faker import Faker
 from flask import Flask
-from restapi.services.uploader import Uploader
+from restapi.config import UPLOAD_PATH
 from restapi.tests import BaseTests
 
 TASK_NAME = "make_order"
@@ -33,7 +32,7 @@ class TestApp(BaseTests):
         assert "NotFound" in body
         assert f"{marine_id}/{order_number}" in body
 
-        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+        path = UPLOAD_PATH.joinpath(marine_id, order_number)
         path.mkdir(parents=True)
 
         # Send a request with zero files to be downloaded

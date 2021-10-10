@@ -1,16 +1,15 @@
 import shutil
 from datetime import datetime
-from pathlib import Path
 from typing import List
 
 from bluecloud.endpoints.schemas import DownloadType, OrderInputSchema
 from restapi import decorators
+from restapi.config import UPLOAD_PATH
 from restapi.connectors import celery
 from restapi.exceptions import NotFound
 from restapi.models import Schema, fields
 from restapi.rest.definition import EndpointResource, Response
 from restapi.services.authentication import User
-from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
 
 
@@ -41,7 +40,7 @@ class Order(EndpointResource):
         user: User,
     ) -> Response:
 
-        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+        path = UPLOAD_PATH.joinpath(marine_id, order_number)
 
         if path.exists():
             log.info("Merging order with previous data in {}", path)
@@ -73,7 +72,7 @@ class Order(EndpointResource):
     )
     def delete(self, marine_id: str, order_number: str, user: User) -> Response:
 
-        path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+        path = UPLOAD_PATH.joinpath(marine_id, order_number)
 
         if not path.exists():
             raise NotFound(

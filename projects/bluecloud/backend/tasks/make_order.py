@@ -15,10 +15,10 @@ from celery.app.task import Task
 from plumbum import local
 from plumbum.commands.processes import ProcessExecutionError
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from restapi.config import UPLOAD_PATH
 from restapi.connectors.celery import CeleryExt
 from restapi.env import Env
 from restapi.exceptions import NotFound
-from restapi.services.uploader import Uploader
 from restapi.utilities.logs import log
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # type: ignore
@@ -266,7 +266,7 @@ def make_order(
     debug: bool,
 ) -> ResponseType:
 
-    path = Uploader.absolute_upload_file(order_number, subfolder=Path(marine_id))
+    path = UPLOAD_PATH.joinpath(marine_id, order_number)
 
     log.warning("{}: starting task with {} download(s)", path, len(downloads))
 
