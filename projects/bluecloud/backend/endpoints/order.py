@@ -46,7 +46,7 @@ class Order(EndpointResource):
             log.info("Merging order with previous data in {}", path)
         else:
             log.info("Create a new order in {}", path)
-            path.mkdir()
+            path.mkdir(parents=True)
 
         celery_ext = celery.get_instance()
         task = celery_ext.celery_app.send_task(
