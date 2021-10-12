@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from cryptography.fernet import Fernet
-from restapi.config import APP_SECRETS, UPLOAD_PATH
+from restapi.config import APP_SECRETS, DATA_PATH
 from restapi.exceptions import BadRequest
 from restapi.services.authentication import import_secret
 
@@ -49,7 +49,7 @@ def read_token(cypher: str) -> str:
     # marine_id and order_number split by /
     marine_id, order_number = zip_path.split("/")
 
-    abs_zip_path = UPLOAD_PATH.joinpath(marine_id, order_number)
+    abs_zip_path = DATA_PATH.joinpath(marine_id, order_number)
 
     expected_seed = get_seed(abs_zip_path)
 

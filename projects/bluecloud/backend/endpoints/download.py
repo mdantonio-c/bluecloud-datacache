@@ -2,7 +2,7 @@ import re
 
 from bluecloud.endpoints import read_token
 from restapi import decorators
-from restapi.config import UPLOAD_PATH
+from restapi.config import DATA_PATH
 from restapi.exceptions import NotFound, Unauthorized
 from restapi.rest.definition import EndpointResource, Response
 from restapi.services.download import Downloader
@@ -30,7 +30,7 @@ class Download(EndpointResource):
             raise Unauthorized("Provided token is invalid")
 
         # == /uploads/MARINE-ID/ORDER-NUMER/FILE.zip
-        zippath = UPLOAD_PATH.joinpath(path)
+        zippath = DATA_PATH.joinpath(path)
         zip_filename = zippath.name
         # == /uploads/MARINE-ID/ORDER-NUMER
         subfolder = zippath.parent

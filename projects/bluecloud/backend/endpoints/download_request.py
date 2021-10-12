@@ -3,7 +3,7 @@ from typing import Dict, List, Union
 
 from bluecloud.endpoints import get_seed_path, get_token
 from restapi import decorators
-from restapi.config import UPLOAD_PATH, get_backend_url
+from restapi.config import DATA_PATH, get_backend_url
 from restapi.exceptions import NotFound
 from restapi.models import Schema, fields
 from restapi.rest.definition import EndpointResource, Response
@@ -33,7 +33,7 @@ class DownloadRequest(EndpointResource):
     )
     def get(self, marine_id: str, order_number: str, user: User) -> Response:
 
-        path = UPLOAD_PATH.joinpath(marine_id, order_number)
+        path = DATA_PATH.joinpath(marine_id, order_number)
 
         if not path.exists():
             raise NotFound(

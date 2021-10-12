@@ -4,7 +4,7 @@ from typing import List
 
 from bluecloud.endpoints.schemas import DownloadType, OrderInputSchema
 from restapi import decorators
-from restapi.config import UPLOAD_PATH
+from restapi.config import DATA_PATH
 from restapi.connectors import celery
 from restapi.exceptions import NotFound
 from restapi.models import Schema, fields
@@ -40,7 +40,7 @@ class Order(EndpointResource):
         user: User,
     ) -> Response:
 
-        path = UPLOAD_PATH.joinpath(marine_id, order_number)
+        path = DATA_PATH.joinpath(marine_id, order_number)
 
         if path.exists():
             log.info("Merging order with previous data in {}", path)
@@ -72,7 +72,7 @@ class Order(EndpointResource):
     )
     def delete(self, marine_id: str, order_number: str, user: User) -> Response:
 
-        path = UPLOAD_PATH.joinpath(marine_id, order_number)
+        path = DATA_PATH.joinpath(marine_id, order_number)
 
         if not path.exists():
             raise NotFound(
