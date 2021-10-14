@@ -135,13 +135,13 @@ log.info("Download url = {}", url)
 
 resp = requests.get(url)
 
-download_filename = f"{order_number}.zip"
+download_filename = Path(f"{order_number}.zip")
 cmd = ' curl {} --header "Authorization: Bearer {}" --output {} -O -J -L'.format(
     url, token, download_filename
 )
 os.system(cmd)
 
-if os.path.isfile(download_filename):
+if download_filename.is_file():
     log.info("File downloaded")
 
     zipsize = Path(download_filename).stat().st_size
@@ -161,7 +161,7 @@ if os.path.isfile(download_filename):
         log.error(e)
         sys.exit(1)
 
-    os.remove(download_filename)
+    download_filename.unlink()
 
 else:
     log.error("Warning: the download test-file has not been downloaded")

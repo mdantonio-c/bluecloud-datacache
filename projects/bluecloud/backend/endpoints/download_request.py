@@ -53,13 +53,12 @@ class DownloadRequest(EndpointResource):
 
         for z in path.glob("*.zip"):
 
-            # This is the string that will be encoded in the token
+            filesize = z.stat().st_size
+
+            log.info("Request download url for {} [size={}]", z, filesize)
+
+            # This is not a path, this s the string that will be encoded in the token
             zip_path = os.path.join(marine_id, order_number, z.name)
-
-            filesize = path.joinpath(z.name).stat().st_size
-
-            log.info("Request download url for {} [size={}]", zip_path, filesize)
-
             token = get_token(path, zip_path)
 
             data["urls"].append(

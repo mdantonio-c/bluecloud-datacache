@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from cryptography.fernet import Fernet
@@ -30,7 +29,7 @@ def get_token(abs_order_path: Path, relative_zip_path: str) -> str:
     return fernet.encrypt(plain.encode()).decode()
 
 
-def read_token(cypher: str) -> str:
+def read_token(cypher: str) -> Path:
     secret = get_secret()
     fernet = Fernet(secret)
 
@@ -41,13 +40,9 @@ def read_token(cypher: str) -> str:
     seed = plain[0]
 
     # This is marine_id/order_number/filefile
-    zip_filepath = plain[1]
-
-    # This is marine_id/order_number
-    zip_path = os.path.dirname(zip_filepath)
-
-    # marine_id and order_number split by /
-    marine_id, order_number = zip_path.split("/")
+    zip_filepath = Path(plain[1])
+    order_number = zip_filepath.parent.name
+    marine_id = zip_filepath.parent.parentname
 
     abs_zip_path = DATA_PATH.joinpath(marine_id, order_number)
 
@@ -56,4 +51,5 @@ def read_token(cypher: str) -> str:
     if seed != expected_seed:
         raise BadRequest("Invalid token seed")
 
-    return zip_filepath
+    # return the order path, not the filename path
+    return zip_filepath.parent
