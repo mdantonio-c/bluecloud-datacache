@@ -42,7 +42,7 @@ def read_token(cypher: str) -> Path:
     # This is marine_id/order_number/filefile
     zip_filepath = Path(plain[1])
     order_number = zip_filepath.parent.name
-    marine_id = zip_filepath.parent.parentname
+    marine_id = zip_filepath.parent.parent.name
 
     abs_zip_path = DATA_PATH.joinpath(marine_id, order_number)
 
