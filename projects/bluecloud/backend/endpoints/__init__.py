@@ -51,5 +51,4 @@ def read_token(cypher: str) -> Path:
     if seed != expected_seed:
         raise BadRequest("Invalid token seed")
 
-    # return the order path, not the filename path
-    return zip_filepath.parent
+    return zip_filepath
