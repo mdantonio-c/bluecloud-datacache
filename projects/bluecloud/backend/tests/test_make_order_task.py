@@ -16,12 +16,12 @@ class TestApp(BaseTests):
         order_number = faker.pystr()
 
         # Send a request with a wrong / missing path
-        response = BaseTests.send_task(
+        response = self.send_task(
             app, TASK_NAME, request_id, marine_id, order_number, [], True
         )
         assert response is None
 
-        mail = BaseTests.read_mock_email()
+        mail = self.read_mock_email()
 
         headers = mail.get("headers")
         assert headers is not None
@@ -36,7 +36,7 @@ class TestApp(BaseTests):
         path.mkdir(parents=True)
 
         # Send a request with zero files to be downloaded
-        response = BaseTests.send_task(
+        response = self.send_task(
             app, TASK_NAME, request_id, marine_id, order_number, [], True
         )
 
@@ -82,7 +82,7 @@ class TestApp(BaseTests):
             },
         ]
 
-        response = BaseTests.send_task(
+        response = self.send_task(
             app, TASK_NAME, request_id, marine_id, order_number, downloads, True
         )
 
