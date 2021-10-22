@@ -41,7 +41,7 @@ class Orders(EndpointResource):
             # marine_id = p.parent.name
             order_number = p.name
             orders.append(order_number)
-        return {"orders": orders}
+        return self.response({"orders": orders})
 
 
 class Order(EndpointResource):
