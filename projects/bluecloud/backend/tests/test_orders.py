@@ -304,6 +304,10 @@ class TestApp(BaseTests):
         assert "request_id" in response
         assert "datetime" in response
 
+        dt = datetime.strptime(response["datetime"], "%Y%m%dT%H:%M:%S")
+        now = datetime.now()
+        assert (now - dt).total_seconds() < 10
+
         r = client.get(f"{API_URI}/orders", headers=headers)
         assert r.status_code == 200
         response = self.get_content(r)
@@ -311,10 +315,6 @@ class TestApp(BaseTests):
         assert "orders" in response
         assert isinstance(response["orders"], list)
         assert order_number in response["orders"]
-
-        dt = datetime.strptime(response["datetime"], "%Y%m%dT%H:%M:%S")
-        now = datetime.now()
-        assert (now - dt).total_seconds() < 10
 
         # The order is still empty => the download request will return an empty list
         r = client.get(
