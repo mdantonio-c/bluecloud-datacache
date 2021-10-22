@@ -304,6 +304,14 @@ class TestApp(BaseTests):
         assert "request_id" in response
         assert "datetime" in response
 
+        r = client.get(f"{API_URI}/orders", headers=headers)
+        assert r.status_code == 200
+        response = self.get_content(r)
+        assert isinstance(response, dict)
+        assert "orders" in response
+        assert isinstance(response["orders"], list)
+        assert order_number in response["orders"]
+
         dt = datetime.strptime(response["datetime"], "%Y%m%dT%H:%M:%S")
         now = datetime.now()
         assert (now - dt).total_seconds() < 10
@@ -660,6 +668,14 @@ class TestApp(BaseTests):
         r = client.delete(f"{API_URI}/order/invalid/invalid", headers=headers)
         assert r.status_code == 404
 
+        r = client.get(f"{API_URI}/orders", headers=headers)
+        assert r.status_code == 200
+        response = self.get_content(r)
+        assert isinstance(response, dict)
+        assert "orders" in response
+        assert isinstance(response["orders"], list)
+        assert order_number in response["orders"]
+
         r = client.get(
             f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
         )
@@ -695,6 +711,14 @@ class TestApp(BaseTests):
         assert r.status_code == 204
 
         assert not path.exists()
+
+        r = client.get(f"{API_URI}/orders", headers=headers)
+        assert r.status_code == 200
+        response = self.get_content(r)
+        assert isinstance(response, dict)
+        assert "orders" in response
+        assert isinstance(response["orders"], list)
+        assert order_number not in response["orders"]
 
         r = client.get(download_url["url"])
         assert r.status_code == 401

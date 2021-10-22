@@ -13,9 +13,35 @@ from restapi.services.authentication import User
 from restapi.utilities.logs import log
 
 
+class OrdersList(Schema):
+    orders = fields.List(fields.Str())
+
+
 class TaskID(Schema):
     request_id = fields.Str()
     datetime = fields.DateTime(format="%Y%m%dT%H:%M:%S")
+
+
+class Orders(EndpointResource):
+
+    labels = ["orders"]
+
+    @decorators.auth.require()
+    @decorators.marshal_with(OrdersList, code=200)
+    @decorators.endpoint(
+        path="/orders",
+        summary="List all defined orders",
+        responses={200: "List of orders is returned"},
+    )
+    def get(self, user: User) -> Response:
+
+        orders: List[str] = []
+
+        for p in DATA_PATH.glob("*/*"):
+            # marine_id = p.parent.name
+            order_number = p.name
+            orders.append(order_number)
+        return {"orders": orders}
 
 
 class Order(EndpointResource):
