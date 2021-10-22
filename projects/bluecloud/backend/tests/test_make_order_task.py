@@ -1,8 +1,10 @@
 from pathlib import Path
 
+import pytest
 from faker import Faker
 from flask import Flask
 from restapi.config import DATA_PATH
+from restapi.connectors.celery import Ignore
 from restapi.tests import BaseTests
 
 TASK_NAME = "make_order"
@@ -16,10 +18,10 @@ class TestApp(BaseTests):
         order_number = faker.pystr()
 
         # Send a request with a wrong / missing path
-        response = self.send_task(
-            app, TASK_NAME, request_id, marine_id, order_number, [], True
-        )
-        assert response is None
+        with pytest.raises(Ignore):
+            self.send_task(
+                app, TASK_NAME, request_id, marine_id, order_number, [], True
+            )
 
         mail = self.read_mock_email()
 
