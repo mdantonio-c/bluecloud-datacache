@@ -54,7 +54,7 @@ jobs:
         run: |
 
           rapydo remove --all
-          rapydo --prod -e MARIS_EXTERNAL_API_SERVER=not-used -e MAX_ZIP_SIZE=262144 -e LOCK_SLEEP_TIME=1 init --force
+          rapydo --testing --prod -e MARIS_EXTERNAL_API_SERVER=not-used -e MAX_ZIP_SIZE=262144 -e LOCK_SLEEP_TIME=1 init --force
 
           rapydo pull --quiet
           rapydo ssl --volatile
