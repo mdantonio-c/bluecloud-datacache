@@ -1,5 +1,6 @@
 import json
 import re
+import tempfile
 import time
 import zipfile
 from datetime import datetime
@@ -67,7 +68,7 @@ def download_and_verify_zip(
     else:
         assert fn == expected_filename
 
-    local_filename = f"{faker.pystr()}.zip"
+    local_filename = Path(tempfile.gettempdir(), f"{faker.pystr()}.zip")
     with open(local_filename, "wb+") as f:
         f.write(r.data)
 
