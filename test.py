@@ -26,7 +26,7 @@ print(f"TESTING: {host}")
 # If local MAX_ZIP_SIZE is expected to be 300000
 is_local = host == "http://localhost:8080"
 r = requests.post(
-    f"{host}/auth/login", data={"username": username, "password": password}
+    f"{host}/auth/login", timeout=30, data={"username": username, "password": password}
 )
 token = r.json()
 headers = {"Authorization": f"Bearer {token}"}
@@ -73,13 +73,15 @@ data = {
     ),
     "debug": True,
 }
-resp = requests.post(f"{host}/api/order", headers=headers, data=data)
+resp = requests.post(f"{host}/api/order", timeout=30, headers=headers, data=data)
 
 print_response_or_exit(resp)
 
 time.sleep(5)
 
-resp = requests.get(f"{host}/api/download/{marine_id}/{order_number}", headers=headers)
+resp = requests.get(
+    f"{host}/api/download/{marine_id}/{order_number}", timeout=30, headers=headers
+)
 
 # Here a single url is expected
 print_response_or_exit(resp)
@@ -110,13 +112,15 @@ data = {
     ),
     "debug": True,
 }
-resp = requests.post(f"{host}/api/order", headers=headers, data=data)
+resp = requests.post(f"{host}/api/order", timeout=30, headers=headers, data=data)
 
 print_response_or_exit(resp)
 
 time.sleep(5)
 
-resp = requests.get(f"{host}/api/download/{marine_id}/{order_number}", headers=headers)
+resp = requests.get(
+    f"{host}/api/download/{marine_id}/{order_number}", timeout=30, headers=headers
+)
 
 # Here two urls are expected
 print_response_or_exit(resp)
@@ -133,7 +137,7 @@ url = content["urls"][0]["url"]
 
 log.info("Download url = {}", url)
 
-resp = requests.get(url)
+resp = requests.get(url, timeout=30)
 
 download_filename = Path(f"{order_number}.zip")
 cmd = ' curl {} --header "Authorization: Bearer {}" --output {} -O -J -L'.format(
@@ -166,4 +170,4 @@ if download_filename.is_file():
 else:
     log.error("Warning: the download test-file has not been downloaded")
 
-requests.get(f"{host}/auth/logout", headers=headers)
+requests.get(f"{host}/auth/logout", timeout=30, headers=headers)

@@ -49,6 +49,7 @@ DOWNLOAD_HEADERS = {
 class ErrorCodes:
     UNREACHABLE_DOWNLOAD_PATH = ("001", "Download path is unreachable")
     INVALID_RESPONSE = ("002", "Invalid response, received status different than 200")
+    DOWNLOAD_TIMEOUT = ("003", "Download request timed out")
     UNEXPECTED_ERROR = ("999", "An unexpected error occurred")
 
 
@@ -60,6 +61,7 @@ def http_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
             stream=True,
             verify=False,
             headers=DOWNLOAD_HEADERS,
+            timeout=120,
         )
 
         if r.status_code != 200:  # pragma: no cover
@@ -78,6 +80,9 @@ def http_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
     except requests.exceptions.MissingSchema as e:
         log.error(e)
         return ErrorCodes.UNREACHABLE_DOWNLOAD_PATH
+    except requests.exceptions.Timeout as e:
+        log.error(e)
+        return ErrorCodes.DOWNLOAD_TIMEOUT
 
     return None
 
@@ -88,7 +93,7 @@ def ftp_download(
 
     try:
         parsed = urlparse(url)
-        ftp = ftplib.FTP(parsed.netloc)
+        ftp = ftplib.FTP(parsed.netloc, timeout=120)
         ftp.login()
         # ftp.login(username, password)
         with open(out_path, "wb") as downloaded_file:
@@ -237,7 +242,7 @@ def make_zip_archives(
             parent_dir = p.parents[1]
             p.rename(parent_dir.joinpath(p.name))
 
-        log.warning("{}: split completed", path)
+        log.warning("{}: oversize cache merged", path)
 
     # Just a final check to verify how many chunks we have
     # In case of a single too large file the current situation would be:
@@ -370,7 +375,7 @@ def make_order(
     elif not FULL_URL:
         log.error("Can't find an URL for the External API Server")
     else:  # pragma: no cover
-        r = requests.post(FULL_URL, json=response)
+        r = requests.post(FULL_URL, json=response, timeout=120)
 
         if r.status_code != 200:
             log.error(
