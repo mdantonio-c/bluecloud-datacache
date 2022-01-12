@@ -261,7 +261,7 @@ def make_zip_archives(
     return z, zip_chunks
 
 
-@CeleryExt.task()
+@CeleryExt.task(idempotent=False)
 def make_order(
     self: Task,
     request_id: str,
