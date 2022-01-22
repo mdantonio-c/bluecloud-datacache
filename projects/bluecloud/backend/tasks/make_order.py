@@ -10,18 +10,18 @@ from typing import List, Optional, Tuple, TypedDict
 from urllib.parse import urlparse
 
 import requests
+import urllib3
 from bluecloud.endpoints.schemas import DownloadType
 from celery.app.task import Task
 from plumbum import local
 from plumbum.commands.processes import ProcessExecutionError
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from restapi.config import DATA_PATH
 from restapi.connectors.celery import CeleryExt
 from restapi.env import Env
 from restapi.exceptions import NotFound
 from restapi.utilities.logs import log
 
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # type: ignore
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # type: ignore
 
 
 class DownloadError(TypedDict):
