@@ -14,7 +14,7 @@ from bluecloud.endpoints.schemas import DownloadType
 from celery.app.task import Task
 from plumbum import local
 from plumbum.commands.processes import ProcessExecutionError
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from requests.packages.urllib3.exceptions import InsecureRequestWarning  # type: ignore
 from restapi.config import DATA_PATH
 from restapi.connectors.celery import CeleryExt
 from restapi.env import Env
