@@ -327,7 +327,7 @@ def make_order(
             downloaded += 1
 
         except Exception as e:  # pragma: no cover
-            log.error("{}: {} ({})", path, e, type())
+            log.error("{}: {} ({})", path, e, type(e))
             response["errors"].append(
                 {
                     "url": download_url,
