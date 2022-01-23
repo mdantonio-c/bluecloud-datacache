@@ -104,6 +104,9 @@ def ftp_download(
     except ftplib.error_perm as e:
         log.error(e)
         return ErrorCodes.UNREACHABLE_DOWNLOAD_PATH
+    except socket.timeout as e:
+        log.error(e)
+        return ErrorCodes.DOWNLOAD_TIMEOUT
 
     return None
 
@@ -324,7 +327,7 @@ def make_order(
             downloaded += 1
 
         except Exception as e:  # pragma: no cover
-            log.error("{}: {}", path, e)
+            log.error("{}: {} ({})", path, e, type())
             response["errors"].append(
                 {
                     "url": download_url,
