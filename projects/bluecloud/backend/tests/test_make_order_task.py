@@ -151,4 +151,4 @@ class TestApp(BaseTests):
 
             zipref.extractall(local_unzipdir)
 
-            assert Path("http-api-1.0") in local_unzipdir.iterdir()
+            assert Path("http-api-1.0") in list(local_unzipdir.iterdir())
