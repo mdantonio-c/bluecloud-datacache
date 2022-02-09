@@ -210,23 +210,35 @@ def make_zip_archives(
                 zip_chunks.append(chunk_path)
                 index = 1
 
+        # for each NON ZIP file in oversize_cache_list:
+        #   1 - move it in cache_oversize/tmp
+        #   2 - zip cache_oversize/tmp -> zip_split/output{inde}.zip
+        #   3 - move back the file from cache_oversize/tmp to cache_oversize
+        # for each ZIP file in oversize_cache_list:
+        #   1 - copy the file from cache_oversize to zip_split/output{inde}.zip
         for f in oversize_cache_list:
-            # Can't safely go outside the loop because if the order does not contain
-            # any over size file then the oversize_cache folder does not exist
-            tmp_dir = oversize_cache.joinpath("tmp")
-            tmp_dir.mkdir(exist_ok=True)
             index += 1
             chunk_path = split_path.joinpath(f"output{index}")
-            # make_archive can't create an archive from file, but only from a folder...
-            tmp_file = tmp_dir.joinpath(f.name)
-            f.rename(tmp_file)
-            shutil.make_archive(
-                base_name=str(chunk_path), format="zip", root_dir=tmp_dir
-            )
-            # move back the file on the oversize_cache cache
-            tmp_file.rename(f)
 
-            shutil.rmtree(tmp_dir)
+            if f.name.endswith(".zip"):
+                log.warning("{} is a zip file, directly copying to zip_path", f)
+                shutil.copy(f, chunk_path.with_suffix(".zip"))
+            else:
+                # Can't safely go outside the loop because if the order does not contain
+                # any over size file then the oversize_cache folder does not exist
+                tmp_dir = oversize_cache.joinpath("tmp")
+                tmp_dir.mkdir(exist_ok=True)
+                # make_archive can't create an archive from file (only from a folder)
+                tmp_file = tmp_dir.joinpath(f.name)
+                f.rename(tmp_file)
+                shutil.make_archive(
+                    base_name=str(chunk_path), format="zip", root_dir=tmp_dir
+                )
+                # move back the file on the oversize_cache cache
+                tmp_file.rename(f)
+
+                shutil.rmtree(tmp_dir)
+
             zip_chunks.append(chunk_path.with_suffix(".zip"))
 
     if zip_chunks:
@@ -360,7 +372,7 @@ def make_order(
 
     log.warning("{}: task completed", path)
 
-    # uhm... last execution override previous response...
+    # uhm... last execution overrides previous response...
     log_path = logs.joinpath("response.json")
     with open(log_path, "w+") as log_file:
         log_file.write(json.dumps(response))
