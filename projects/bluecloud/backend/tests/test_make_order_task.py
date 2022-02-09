@@ -135,7 +135,7 @@ class TestApp(BaseTests):
         path = DATA_PATH.joinpath(marine_id, order_number)
         path.mkdir(parents=True)
 
-        os.environ["MAX_ZIP_SIZE"] = 1024
+        os.environ["MAX_ZIP_SIZE"] = "1024"
         # send a url containing a large zip
         # Expected an output.zip containing the files, not a matrioska-zip
 
