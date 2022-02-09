@@ -7,6 +7,7 @@ from faker import Faker
 from flask import Flask
 from restapi.config import DATA_PATH
 from restapi.connectors.celery import Ignore
+from restapi.env import Env
 from restapi.tests import BaseTests
 
 TASK_NAME = "make_order"
@@ -135,6 +136,7 @@ class TestApp(BaseTests):
         path = DATA_PATH.joinpath(marine_id, order_number)
         path.mkdir(parents=True)
 
+        Env.get_int.cache_clear()
         os.environ["MAX_ZIP_SIZE"] = "1024"
         # send a url containing a large zip
         # Expected an output.zip containing the files, not a matrioska-zip
