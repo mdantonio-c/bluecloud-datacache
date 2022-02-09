@@ -377,18 +377,17 @@ def make_order(
     with open(log_path, "w+") as log_file:
         log_file.write(json.dumps(response))
 
-    ACTION = "download-datafiles-ready"
-
     EXT_URL = Env.get("MARIS_EXTERNAL_API_SERVER", "")
-    if EXT_URL:
-        FULL_URL = f"{EXT_URL}/{ACTION}"
-    else:
-        FULL_URL = ""
+
+    if not EXT_URL:  # pragma: no cover
+        log.error("Can't find an URL for the External API Server")
+        return response
+
+    ACTION = "download-datafiles-ready"
+    FULL_URL = f"{EXT_URL}/{ACTION}"
 
     if debug:
         log.info("Debug mode is enabled, response not sent to {}", FULL_URL)
-    elif not FULL_URL:
-        log.error("Can't find an URL for the External API Server")
     else:  # pragma: no cover
         r = requests.post(FULL_URL, json=response, timeout=120)
 
