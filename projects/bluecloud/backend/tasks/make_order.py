@@ -5,6 +5,7 @@ import shutil
 import socket
 import time
 import zipfile
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Tuple, TypedDict
 from urllib.parse import urlparse
@@ -385,7 +386,8 @@ def make_order(
     log.warning("{}: task completed", path)
 
     # uhm... last execution overrides previous response...
-    log_path = logs.joinpath("response.json")
+    suffix = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
+    log_path = logs.joinpath(f"response_{suffix}.json")
     with open(log_path, "w+") as log_file:
         log_file.write(json.dumps(response))
 

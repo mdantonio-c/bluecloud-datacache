@@ -356,8 +356,10 @@ class TestApp(BaseTests):
         assert not path.joinpath("output3.zip").exists()
 
         assert logs.exists()
-        assert logs.joinpath("response.json").exists()
-        with open(logs.joinpath("response.json")) as json_file:
+        assert not logs.joinpath("response.json").exists()
+        logs_files = list(logs.iterdir())
+        assert len(logs_files) == 1
+        with open(logs_files[0]) as json_file:
             response_file = json.load(json_file)
 
             assert response_file is not None
@@ -497,9 +499,11 @@ class TestApp(BaseTests):
         assert new_zip_size > 0
         assert new_zip_size > zip_size
 
-        assert logs.joinpath("response.json").exists()
-        # response.json file is overwritten
-        with open(logs.joinpath("response.json")) as json_file:
+        assert not logs.joinpath("response.json").exists()
+
+        logs_files = list(logs.iterdir())
+        assert len(logs_files) == 2
+        with open(sorted(logs_files)[-1]) as json_file:
             response_file = json.load(json_file)
 
             assert response_file is not None
