@@ -740,6 +740,7 @@ class TestApp(BaseTests):
         filename_2 = faker.file_name()
 
         order_line1 = faker.pystr()
+        order_line2 = faker.pystr()
         order_line3 = faker.pystr()
 
         download_url1 = "https://github.com/rapydo/http-api/archive/v1.0.zip"
@@ -805,7 +806,7 @@ class TestApp(BaseTests):
                     {
                         "url": download_url2,
                         "filename": filename_2,
-                        "order_line": order_line3,
+                        "order_line": order_line2,
                     },
                 ]
             ),
@@ -848,4 +849,59 @@ class TestApp(BaseTests):
 
         # verify that the cache should be removed
 
-        # SEND a NEW REQUEST => should be refused
+        # assert zip_file1.exists()
+        # assert zip_file2.exists()
+        # assert not zip_file3.exists()
+        # assert not cache.joinpath(filename_1).exists()
+        # assert not cache.joinpath(filename_2).exists()
+
+        # # SEND a third ORDER REQUEST => should be refused
+        # filename_3 = faker.file_name()
+
+        # data = {
+        #     "debug": True,
+        #     "request_id": new_request_id,
+        #     "marine_id": marine_id,
+        #     "order_number": order_number,
+        #     "downloads": json.dumps(
+        #         [
+        #             {
+        #                 "url": download_url2,
+        #                 "filename": filename_3,
+        #                 "order_line": order_line3,
+        #             },
+        #         ]
+        #     ),
+        # }
+
+        # r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        # assert r.status_code == 409
+
+        # VERIFY THE DOWNLOAD
+
+        r = client.get(
+            f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
+        )
+        assert r.status_code == 200
+
+        response = self.get_content(r)
+        assert isinstance(response, dict)
+        assert "urls" in response
+        assert isinstance(response["urls"], list)
+
+        assert len(response["urls"]) == 1
+
+        download_url = response["urls"][0]
+        assert "url" in download_url
+        assert "size" in download_url
+        assert isinstance(download_url["url"], str)
+        assert isinstance(download_url["size"], int)
+        assert download_url["size"] > 0
+
+        download_and_verify_zip(
+            client,
+            faker,
+            download_url["url"],
+            download_url["size"],
+            f"Blue-Cloud_order_{order_number}.zip",
+        )
