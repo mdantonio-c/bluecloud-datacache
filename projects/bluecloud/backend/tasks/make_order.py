@@ -125,7 +125,6 @@ def make_zip_archives(
 ) -> Tuple[Path, List[Path]]:
 
     MAX_ZIP_SIZE = Env.get_int("MAX_ZIP_SIZE")
-    log.critical("DEBUG CODE: MAX_ZIP_SIZE = {}", MAX_ZIP_SIZE)
 
     oversize_cache = datadir.parent.joinpath("cache_oversize")
     # Move any over-size file in the oversize cache
