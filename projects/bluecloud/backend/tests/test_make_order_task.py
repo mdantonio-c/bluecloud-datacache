@@ -138,6 +138,8 @@ class TestApp(BaseTests):
             app, TASK_NAME, request_id, marine_id, order_number, downloads, True
         )
 
-        path = DATA_PATH.joinpath(marine_id, order_number, "output.zip")
+        path = DATA_PATH.joinpath(marine_id, order_number)
+        path.mkdir(parents=True)
 
+        path = path.joinpath("output.zip")
         assert path.exists()
