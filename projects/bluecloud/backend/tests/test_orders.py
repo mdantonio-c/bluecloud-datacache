@@ -889,7 +889,7 @@ class TestApp(BaseTests):
         assert "urls" in response
         assert isinstance(response["urls"], list)
 
-        assert len(response["urls"]) == 1
+        assert len(response["urls"]) == 2
 
         download_url = response["urls"][0]
         assert "url" in download_url
@@ -903,5 +903,22 @@ class TestApp(BaseTests):
             faker,
             download_url["url"],
             download_url["size"],
-            f"Blue-Cloud_order_{order_number}.zip",
+            f"Blue-Cloud_order_{order_number}_1.zip",
+            f"Blue-Cloud_order_{order_number}_2.zip",
+        )
+
+        download_url = response["urls"][1]
+        assert "url" in download_url
+        assert "size" in download_url
+        assert isinstance(download_url["url"], str)
+        assert isinstance(download_url["size"], int)
+        assert download_url["size"] > 0
+
+        download_and_verify_zip(
+            client,
+            faker,
+            download_url["url"],
+            download_url["size"],
+            f"Blue-Cloud_order_{order_number}_1.zip",
+            f"Blue-Cloud_order_{order_number}_2.zip",
         )
