@@ -727,3 +727,125 @@ class TestApp(BaseTests):
 
         r = client.get(download_url["url"])
         assert r.status_code == 401
+
+    def test_order_close(self, client: FlaskClient, faker: Faker) -> None:
+
+        headers, _ = self.do_login(client, None, None)
+
+        marine_id = faker.pystr()
+        order_number = faker.pystr()
+        request_id = faker.pystr()
+
+        filename_1 = faker.file_name()
+        filename_2 = faker.file_name()
+
+        order_line1 = faker.pystr()
+        order_line3 = faker.pystr()
+
+        download_url1 = "https://github.com/rapydo/http-api/archive/v1.0.zip"
+        download_url2 = "https://github.com/rapydo/do/archive/v1.0.zip"
+
+        data = {
+            "debug": True,
+            "request_id": request_id,
+            "marine_id": marine_id,
+            "order_number": order_number,
+            "downloads": json.dumps(
+                [
+                    {
+                        "url": download_url1,
+                        "filename": filename_1,
+                        "order_line": order_line1,
+                    },
+                ]
+            ),
+        }
+        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        assert r.status_code == 202
+        response = self.get_content(r)
+        assert isinstance(response, dict)
+        assert "request_id" in response
+        assert "datetime" in response
+
+        # Not the best... but enough for now
+        time.sleep(20)
+
+        # Now the order should be completed, let's verify the result:
+
+        path = DATA_PATH.joinpath(marine_id, order_number)
+
+        assert path.exists()
+
+        cache = path.joinpath("cache")
+        logs = path.joinpath("logs")
+        zip_file = path.joinpath("output.zip")
+
+        assert cache.exists()
+        assert cache.joinpath(filename_1).exists()
+        assert not cache.joinpath(filename_2).exists()
+
+        assert zip_file.exists()
+        zip_size = zip_file.stat().st_size
+        assert zip_size > 0
+
+        assert not path.joinpath("output1.zip").exists()
+        assert not path.joinpath("output2.zip").exists()
+        assert not path.joinpath("output3.zip").exists()
+
+        # Send a second order to be merged:
+        new_request_id = faker.pystr()
+
+        data = {
+            "debug": True,
+            "request_id": new_request_id,
+            "marine_id": marine_id,
+            "order_number": order_number,
+            "downloads": json.dumps(
+                [
+                    {
+                        "url": download_url2,
+                        "filename": filename_2,
+                        "order_line": order_line3,
+                    },
+                ]
+            ),
+        }
+
+        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        assert r.status_code == 202
+        response = self.get_content(r)
+        assert isinstance(response, dict)
+        assert "request_id" in response
+        assert "datetime" in response
+
+        # Not the best... but enough for now
+        time.sleep(20)
+
+        # Now the order should be completed, let's verify the result.
+        # Two zips are expected now
+
+        assert path.exists()
+        assert cache.exists()
+        assert logs.exists()
+        # The single zip file no longer exists
+        assert not zip_file.exists()
+
+        zip_file1 = path.joinpath("output1.zip")
+        zip_file2 = path.joinpath("output2.zip")
+        zip_file3 = path.joinpath("output3.zip")
+        assert zip_file1.exists()
+        assert zip_file2.exists()
+        assert not zip_file3.exists()
+
+        assert cache.joinpath(filename_1).exists()
+        assert cache.joinpath(filename_2).exists()
+
+        new_zip_size = zip_file1.stat().st_size + zip_file2.stat().st_size
+        assert new_zip_size > 0
+        assert new_zip_size > zip_size
+
+        # CLOSE THE ORDER
+
+        # verify that the cache should be removed
+
+        # SEND a NEW REQUEST => should be refused

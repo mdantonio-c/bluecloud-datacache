@@ -25,6 +25,7 @@ from restapi.utilities.logs import log
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # type: ignore
 
 NETWORK_RETRIES = 5
+NETWORK_SLEEP = 300
 
 
 class DownloadError(TypedDict):
@@ -344,7 +345,7 @@ def make_order(
                     log.warning(
                         "{} attempt {}/{}: {}", path, error[1], i, NETWORK_RETRIES
                     )
-                    time.sleep(300)
+                    time.sleep(NETWORK_SLEEP)
                     continue
 
                 break
@@ -451,6 +452,6 @@ def make_order(
                     NETWORK_RETRIES,
                 )
                 log.error("{} ({})", path, e, type(e))
-                time.sleep(300)
+                time.sleep(NETWORK_SLEEP)
 
     return response
