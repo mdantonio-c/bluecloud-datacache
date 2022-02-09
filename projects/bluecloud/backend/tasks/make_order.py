@@ -50,6 +50,7 @@ class ErrorCodes:
     UNREACHABLE_DOWNLOAD_PATH = ("001", "Download path is unreachable")
     INVALID_RESPONSE = ("002", "Invalid response, received status different than 200")
     DOWNLOAD_TIMEOUT = ("003", "Download request timed out")
+    EMPTY_FILE = ("004", "Downloaded file is empty")
     UNEXPECTED_ERROR = ("999", "An unexpected error occurred")
 
 
@@ -336,6 +337,17 @@ def make_order(
                 )
                 continue
 
+            # Verify the file size, if zero delete the file and report as error
+            if local_path.stat().st_size == 0:  # pragma: no cover
+                local_path.unlink()
+                response["errors"].append(
+                    {
+                        "url": download_url,
+                        "order_line": order_line,
+                        "error_number": ErrorCodes.EMPTY_FILE[0],
+                    }
+                )
+                continue
             downloaded += 1
 
         except Exception as e:  # pragma: no cover

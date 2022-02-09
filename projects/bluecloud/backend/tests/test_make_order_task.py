@@ -124,7 +124,7 @@ class TestApp(BaseTests):
         downloads = [
             {
                 "url": "https://github.com/rapydo/http-api/archive/v1.0.zip",
-                "filename": faker.file_name(),
+                "filename": faker.file_name(extension="zip"),
                 "order_line": faker.pystr(),
             },
         ]
