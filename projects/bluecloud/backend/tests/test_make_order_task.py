@@ -137,6 +137,7 @@ class TestApp(BaseTests):
         path.mkdir(parents=True)
 
         Env.get_int.cache_clear()
+        Env.get.cache_clear()
         os.environ["MAX_ZIP_SIZE"] = "1024"
         # send a url containing a large zip
         # Expected an output.zip containing the files, not a matrioska-zip
