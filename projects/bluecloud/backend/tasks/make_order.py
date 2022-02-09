@@ -24,6 +24,8 @@ from restapi.utilities.logs import log
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # type: ignore
 
+NETWORK_RETRIES = 5
+
 
 class DownloadError(TypedDict):
     url: str
@@ -85,6 +87,9 @@ def http_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
     except requests.exceptions.Timeout as e:
         log.error(e)
         return ErrorCodes.DOWNLOAD_TIMEOUT
+    except Exception as e:
+        log.error(e)
+        return ErrorCodes.UNEXPECTED_ERROR
 
     return None
 
@@ -109,6 +114,9 @@ def ftp_download(
     except socket.timeout as e:
         log.error(e)
         return ErrorCodes.DOWNLOAD_TIMEOUT
+    except Exception as e:
+        log.error(e)
+        return ErrorCodes.UNEXPECTED_ERROR
 
     return None
 
@@ -323,10 +331,23 @@ def make_order(
 
             local_path = cache.joinpath(filename)
 
-            if download_url.startswith("ftp://"):
-                error = ftp_download(download_url, local_path)  # pragma: no cover
-            else:
-                error = http_download(download_url, local_path)
+            for i in range(1, NETWORK_RETRIES + 1):
+                if download_url.startswith("ftp://"):
+                    error = ftp_download(download_url, local_path)  # pragma: no cover
+                else:
+                    error = http_download(download_url, local_path)
+
+                if (
+                    error == ErrorCodes.DOWNLOAD_TIMEOUT
+                    or error == ErrorCodes.UNEXPECTED_ERROR
+                ):  # pragma: no cover
+                    log.warning(
+                        "{} attempt {}/{}: {}", path, error[1], i, NETWORK_RETRIES
+                    )
+                    time.sleep(300)
+                    continue
+
+                break
 
             if error:
                 response["errors"].append(
@@ -403,21 +424,33 @@ def make_order(
     if debug:
         log.info("Debug mode is enabled, response not sent to {}", FULL_URL)
     else:  # pragma: no cover
-        r = requests.post(FULL_URL, json=response, timeout=120)
 
-        if r.status_code != 200:
-            log.error(
-                "{}: failed to call external API (status: {}, uri: {})",
-                path,
-                r.status_code,
-                FULL_URL,
-            )
-        else:
-            log.warning(
-                "{}: called POST on external API (status: {}, uri: {})",
-                path,
-                r.status_code,
-                FULL_URL,
-            )
+        for i in range(1, NETWORK_RETRIES + 1):
+            try:
+                r = requests.post(FULL_URL, json=response, timeout=120)
+
+                if r.status_code != 200:
+                    log.error(
+                        "{}: failed to call external API (status: {}, uri: {})",
+                        path,
+                        r.status_code,
+                        FULL_URL,
+                    )
+                else:
+                    log.warning(
+                        "{}: called POST on external API (status: {}, uri: {})",
+                        path,
+                        r.status_code,
+                        FULL_URL,
+                    )
+                break
+            except Exception as e:
+                log.warning(
+                    "Sending response to MARIS: attempt {}/{} failed",
+                    i,
+                    NETWORK_RETRIES,
+                )
+                log.error("{} ({})", path, e, type(e))
+                time.sleep(300)
 
     return response
