@@ -1,4 +1,5 @@
 import os
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -119,9 +120,6 @@ class TestApp(BaseTests):
         assert response["errors"][1]["error_number"] == "001"
         assert Path(path.joinpath("output.zip")).exists()
 
-        os.environ["MAX_ZIP_SIZE"] = 1024
-        # send a url containing a large zip
-        # Expected an output.zip containing the files, not a matrioska-zip
         downloads = [
             {
                 "url": "https://github.com/rapydo/http-api/archive/v1.0.zip",
@@ -134,12 +132,23 @@ class TestApp(BaseTests):
         marine_id = faker.pystr()
         order_number = faker.pystr()
 
+        path = DATA_PATH.joinpath(marine_id, order_number)
+        path.mkdir(parents=True)
+
+        os.environ["MAX_ZIP_SIZE"] = 1024
+        # send a url containing a large zip
+        # Expected an output.zip containing the files, not a matrioska-zip
+
         response = self.send_task(
             app, TASK_NAME, request_id, marine_id, order_number, downloads, True
         )
 
-        path = DATA_PATH.joinpath(marine_id, order_number)
-        path.mkdir(parents=True)
+        zippath = path.joinpath("output.zip")
+        assert zippath.exists()
 
-        path = path.joinpath("output.zip")
-        assert path.exists()
+        local_unzipdir = path.joinpath("tmpunzippath")
+        with zipfile.ZipFile(zippath, "r") as zipref:
+
+            zipref.extractall(local_unzipdir)
+
+            assert Path("http-api-1.0") in local_unzipdir.iterdir()
