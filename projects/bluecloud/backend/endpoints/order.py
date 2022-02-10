@@ -148,16 +148,18 @@ class Order(EndpointResource):
 
         # clean the cache
         cache = path.joinpath("cache")
-        for f in cache.iterdir():
-            if f.is_file():
-                log.info("Removing {}", f.resolve())
-                f.unlink()
+        if cache.exists():
+            for f in cache.iterdir():
+                if f.is_file():
+                    log.info("Removing {}", f.resolve())
+                    f.unlink()
 
         cache_oversize = path.joinpath("cache_oversize")
-        for f in cache_oversize.iterdir():
-            if f.is_file():
-                log.info("Removing {}", f.resolve())
-                f.unlink()
+        if cache_oversize.exists():
+            for f in cache_oversize.iterdir():
+                if f.is_file():
+                    log.info("Removing {}", f.resolve())
+                    f.unlink()
 
         close_file.touch()
         log.info("Order {} closed", order_number)
