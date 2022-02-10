@@ -1,5 +1,6 @@
 import json
 import re
+import shutil
 import tempfile
 import time
 import zipfile
@@ -847,7 +848,7 @@ class TestApp(BaseTests):
         # Create a fake oversize zip to verify the removal
         oversize_cache = cache = path.joinpath("cache_oversize")
         oversize_zip = oversize_cache.joinpath(faker.file_name(extension="zip"))
-        zip_file1.copy(oversize_zip)
+        shutil.copy(zip_file1, oversize_zip)
 
         assert zip_file1.exists()
         assert zip_file2.exists()
