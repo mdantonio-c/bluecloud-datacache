@@ -846,7 +846,8 @@ class TestApp(BaseTests):
         zip_file3 = path.joinpath("output3.zip")
 
         # Create a fake oversize zip to verify the removal
-        oversize_cache = cache = path.joinpath("cache_oversize")
+        oversize_cache = path.joinpath("cache_oversize")
+        oversize_cache.mkdir(exist_ok=True)
         oversize_zip = oversize_cache.joinpath(faker.file_name(extension="zip"))
         shutil.copy(zip_file1, oversize_zip)
 
