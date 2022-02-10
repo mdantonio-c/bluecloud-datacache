@@ -68,6 +68,10 @@ class Order(EndpointResource):
 
         path = DATA_PATH.joinpath(marine_id, order_number)
 
+        close_file = path.joinpath("closed")
+        if close_file.exists():
+            raise Conflict(f"Order {order_number} is closed")
+
         if path.exists():
             log.info("Merging order with previous data in {}", path)
         else:
@@ -134,9 +138,18 @@ class Order(EndpointResource):
 
         log.info("Order to be closed: {} on MarineID {}", order_number, marine_id)
 
-        if False:
+        # clean the cache
+        cache = path.joinpath("cache")
+        for f in cache.iterdir():
+            if f.is_file():
+                log.info("Removing {}", f.resolve())
+                f.unlink()
+
+        close_file = path.joinpath("closed")
+        if close_file.exists():
             raise Conflict(f"Order {order_number} is already closed")
 
+        close_file.touch()
         log.info("Order {} closed", order_number)
 
         return self.empty_response()

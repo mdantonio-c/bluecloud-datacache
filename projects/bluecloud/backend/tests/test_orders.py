@@ -865,37 +865,44 @@ class TestApp(BaseTests):
         r = client.patch(f"{API_URI}/order/invalid/{order_number}", headers=headers)
         assert r.status_code == 404
 
-        # verify that the cache should be removed
+        r = client.patch(f"{API_URI}/order/{marine_id}/{order_number}", headers=headers)
+        assert r.status_code == 204
 
-        # assert zip_file1.exists()
-        # assert zip_file2.exists()
-        # assert not zip_file3.exists()
-        # assert not cache.joinpath(filename_1).exists()
-        # assert not cache.joinpath(filename_2).exists()
+        r = client.patch(f"{API_URI}/order/{marine_id}/{order_number}", headers=headers)
+        assert r.status_code == 409
+        assert self.get_content(r) == f"Order {order_number} is already close"
 
-        # # SEND a third ORDER REQUEST => should be refused
-        # filename_3 = faker.file_name()
+        # verify that the cache is be removed
+        assert zip_file1.exists()
+        assert zip_file2.exists()
+        assert not zip_file3.exists()
+        assert not cache.joinpath(filename_1).exists()
+        assert not cache.joinpath(filename_2).exists()
 
-        # data = {
-        #     "debug": True,
-        #     "request_id": new_request_id,
-        #     "marine_id": marine_id,
-        #     "order_number": order_number,
-        #     "downloads": json.dumps(
-        #         [
-        #             {
-        #                 "url": download_url2,
-        #                 "filename": filename_3,
-        #                 "order_line": order_line3,
-        #             },
-        #         ]
-        #     ),
-        # }
+        # SEND a third ORDER REQUEST => should be refused
+        filename_3 = faker.file_name()
 
-        # r = client.post(f"{API_URI}/order", headers=headers, data=data)
-        # assert r.status_code == 409
+        data = {
+            "debug": True,
+            "request_id": new_request_id,
+            "marine_id": marine_id,
+            "order_number": order_number,
+            "downloads": json.dumps(
+                [
+                    {
+                        "url": download_url2,
+                        "filename": filename_3,
+                        "order_line": order_line3,
+                    },
+                ]
+            ),
+        }
 
-        # VERIFY THE DOWNLOAD
+        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        assert r.status_code == 409
+        assert self.get_content(r) == f"Order {order_number} is closed"
+
+        # VERIFY THE DOWNLOAD: should works even if the order is closed
 
         r = client.get(
             f"{API_URI}/download/{marine_id}/{order_number}", headers=headers
