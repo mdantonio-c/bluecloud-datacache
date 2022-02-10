@@ -843,12 +843,18 @@ class TestApp(BaseTests):
         zip_file1 = path.joinpath("output1.zip")
         zip_file2 = path.joinpath("output2.zip")
         zip_file3 = path.joinpath("output3.zip")
+
+        # Create a fake oversize zip to verify the removal
+        oversize_cache = cache = path.joinpath("cache_oversize")
+        oversize_zip = oversize_cache.joinpath(faker.file_name(extension="zip"))
+        zip_file1.copy(oversize_zip)
+
         assert zip_file1.exists()
         assert zip_file2.exists()
         assert not zip_file3.exists()
-
         assert cache.joinpath(filename_1).exists()
         assert cache.joinpath(filename_2).exists()
+        assert oversize_zip.exists()
 
         new_zip_size = zip_file1.stat().st_size + zip_file2.stat().st_size
         assert new_zip_size > 0
@@ -878,6 +884,7 @@ class TestApp(BaseTests):
         assert not zip_file3.exists()
         assert not cache.joinpath(filename_1).exists()
         assert not cache.joinpath(filename_2).exists()
+        assert not oversize_zip.exists()
 
         # SEND a third ORDER REQUEST => should be refused
         filename_3 = faker.file_name()
