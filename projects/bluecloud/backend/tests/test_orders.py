@@ -93,6 +93,9 @@ class TestApp(BaseTests):
         r = client.put(f"{API_URI}/order")
         assert r.status_code == 405
 
+        r = client.patch(f"{API_URI}/order")
+        assert r.status_code == 405
+
         r = client.delete(f"{API_URI}/order")
         assert r.status_code == 405
 
@@ -103,7 +106,13 @@ class TestApp(BaseTests):
         r = client.delete(f"{API_URI}/order/invalid")
         assert r.status_code == 404
 
+        r = client.patch(f"{API_URI}/order/invalid")
+        assert r.status_code == 404
+
         r = client.delete(f"{API_URI}/order/invalid/invalid")
+        assert r.status_code == 401
+
+        r = client.patch(f"{API_URI}/order/invalid/invalid")
         assert r.status_code == 401
 
     def test_order_creation(self, client: FlaskClient, faker: Faker) -> None:
@@ -846,6 +855,15 @@ class TestApp(BaseTests):
         assert new_zip_size > zip_size
 
         # CLOSE THE ORDER
+
+        r = client.patch(f"{API_URI}/download/invalid/invalid", headers=headers)
+        assert r.status_code == 404
+
+        r = client.patch(f"{API_URI}/download/{marine_id}/invalid", headers=headers)
+        assert r.status_code == 404
+
+        r = client.patch(f"{API_URI}/download/invalid/{order_number}", headers=headers)
+        assert r.status_code == 404
 
         # verify that the cache should be removed
 

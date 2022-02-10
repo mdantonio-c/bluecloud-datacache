@@ -6,7 +6,7 @@ from bluecloud.endpoints.schemas import DownloadType, OrderInputSchema
 from restapi import decorators
 from restapi.config import DATA_PATH
 from restapi.connectors import celery
-from restapi.exceptions import NotFound
+from restapi.exceptions import Conflict, NotFound
 from restapi.models import Schema, fields
 from restapi.rest.definition import EndpointResource, Response
 from restapi.services.authentication import User
@@ -105,10 +105,38 @@ class Order(EndpointResource):
                 f"Order {order_number} does not exist for marine id {marine_id}"
             )
 
-        log.info("Order to be deleted: {} on marineID {}", order_number, marine_id)
+        log.info("Order to be deleted: {} on MarineID {}", order_number, marine_id)
 
         shutil.rmtree(path)
 
         log.info("Order {} deleted", order_number)
+
+        return self.empty_response()
+
+    @decorators.auth.require()
+    @decorators.endpoint(
+        path="/order/<marine_id>/<order_number>",
+        summary="Close an order",
+        responses={
+            204: "Order successfully closed",
+            404: "Order not found",
+            409: "Order already closed",
+        },
+    )
+    def patch(self, marine_id: str, order_number: str, user: User) -> Response:
+
+        path = DATA_PATH.joinpath(marine_id, order_number)
+
+        if not path.exists():
+            raise NotFound(
+                f"Order {order_number} does not exist for marine id {marine_id}"
+            )
+
+        log.info("Order to be closed: {} on MarineID {}", order_number, marine_id)
+
+        if False:
+            raise Conflict(f"Order {order_number} is already closed")
+
+        log.info("Order {} closed", order_number)
 
         return self.empty_response()
