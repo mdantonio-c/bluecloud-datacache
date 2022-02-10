@@ -856,13 +856,13 @@ class TestApp(BaseTests):
 
         # CLOSE THE ORDER
 
-        r = client.patch(f"{API_URI}/download/invalid/invalid", headers=headers)
+        r = client.patch(f"{API_URI}/order/invalid/invalid", headers=headers)
         assert r.status_code == 404
 
-        r = client.patch(f"{API_URI}/download/{marine_id}/invalid", headers=headers)
+        r = client.patch(f"{API_URI}/order/{marine_id}/invalid", headers=headers)
         assert r.status_code == 404
 
-        r = client.patch(f"{API_URI}/download/invalid/{order_number}", headers=headers)
+        r = client.patch(f"{API_URI}/order/invalid/{order_number}", headers=headers)
         assert r.status_code == 404
 
         # verify that the cache should be removed
