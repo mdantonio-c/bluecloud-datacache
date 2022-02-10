@@ -128,7 +128,11 @@ class Order(EndpointResource):
         },
     )
     def patch(self, marine_id: str, order_number: str, user: User) -> Response:
-
+        """
+        NOTE: if you ever want to implement a re-open endpint:
+            1 - de-compress all zip files into cache folder
+            2 - delete the closed file
+        """
         path = DATA_PATH.joinpath(marine_id, order_number)
 
         if not path.exists():
@@ -145,6 +149,12 @@ class Order(EndpointResource):
         # clean the cache
         cache = path.joinpath("cache")
         for f in cache.iterdir():
+            if f.is_file():
+                log.info("Removing {}", f.resolve())
+                f.unlink()
+
+        cache_oversize = path.joinpath("cache_oversize")
+        for f in cache_oversize.iterdir():
             if f.is_file():
                 log.info("Removing {}", f.resolve())
                 f.unlink()
