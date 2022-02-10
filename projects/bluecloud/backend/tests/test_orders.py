@@ -870,7 +870,7 @@ class TestApp(BaseTests):
 
         r = client.patch(f"{API_URI}/order/{marine_id}/{order_number}", headers=headers)
         assert r.status_code == 409
-        assert self.get_content(r) == f"Order {order_number} is already close"
+        assert self.get_content(r) == f"Order {order_number} is already closed"
 
         # verify that the cache is be removed
         assert zip_file1.exists()
