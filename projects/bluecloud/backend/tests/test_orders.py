@@ -122,7 +122,7 @@ class TestApp(BaseTests):
         # #############################################################
         # Empty input
         data: Dict[str, Any] = {}
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 400
         response = self.get_content(r)
         assert isinstance(response, dict)
@@ -143,7 +143,7 @@ class TestApp(BaseTests):
             "order_number": faker.pyint(),
             "downloads": faker.pystr(),
         }
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 400
         response = self.get_content(r)
         assert isinstance(response, dict)
@@ -162,7 +162,7 @@ class TestApp(BaseTests):
             "order_number": faker.pystr(),
             "downloads": [],
         }
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 400
         response = self.get_content(r)
         assert isinstance(response, dict)
@@ -181,7 +181,7 @@ class TestApp(BaseTests):
             "order_number": faker.pystr(),
             "downloads": json.dumps([{}]),
         }
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 400
         response = self.get_content(r)
         assert isinstance(response, dict)
@@ -215,7 +215,7 @@ class TestApp(BaseTests):
                 ]
             ),
         }
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 400
         response = self.get_content(r)
         assert isinstance(response, dict)
@@ -253,7 +253,7 @@ class TestApp(BaseTests):
         #         ]
         #     ),
         # }
-        # r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        # r = client.post(f"{API_URI}/order", headers=headers, json=data)
         # assert r.status_code == 400
         # response = self.get_content(r)
         # assert isinstance(response, dict)
@@ -308,7 +308,7 @@ class TestApp(BaseTests):
                 ]
             ),
         }
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 202
         response = self.get_content(r)
         assert isinstance(response, dict)
@@ -475,7 +475,7 @@ class TestApp(BaseTests):
             ),
         }
 
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 202
         response = self.get_content(r)
         assert isinstance(response, dict)
@@ -591,7 +591,7 @@ class TestApp(BaseTests):
             ),
         }
 
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 202
 
         data = {
@@ -610,7 +610,7 @@ class TestApp(BaseTests):
             ),
         }
 
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 202
 
         # Not the best... but enough for now
@@ -771,7 +771,7 @@ class TestApp(BaseTests):
                 ]
             ),
         }
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 202
         response = self.get_content(r)
         assert isinstance(response, dict)
@@ -822,7 +822,7 @@ class TestApp(BaseTests):
             ),
         }
 
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 202
         response = self.get_content(r)
         assert isinstance(response, dict)
@@ -907,7 +907,7 @@ class TestApp(BaseTests):
             ),
         }
 
-        r = client.post(f"{API_URI}/order", headers=headers, data=data)
+        r = client.post(f"{API_URI}/order", headers=headers, json=data)
         assert r.status_code == 409
         assert self.get_content(r) == f"Order {order_number} is closed"
 
