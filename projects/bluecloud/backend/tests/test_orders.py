@@ -153,25 +153,6 @@ class TestApp(BaseTests):
         assert response["downloads"] == ["Not a valid list."]
 
         # #############################################################
-        # Empty downloads list
-
-        data = {
-            "request_id": faker.pystr(),
-            "marine_id": faker.pystr(),
-            "order_number": faker.pystr(),
-            "downloads": [],
-        }
-        r = client.post(f"{API_URI}/order", headers=headers, json=data)
-        assert r.status_code == 400
-        response = self.get_content(r)
-        assert isinstance(response, dict)
-        assert "request_id" not in response
-        assert "marine_id" not in response
-        assert "order_number" not in response
-        assert "downloads" in response
-        assert response["downloads"] == ["Missing data for required field."]
-
-        # #############################################################
         # Wrong data in download list
 
         data = {
