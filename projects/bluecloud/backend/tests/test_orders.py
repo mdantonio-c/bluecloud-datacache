@@ -148,8 +148,8 @@ class TestApp(BaseTests):
         response = self.get_content(r)
         assert isinstance(response, dict)
         assert response["request_id"] == ["Not a valid string."]
+        assert response["marine_id"] == ["Not a valid string."]
         assert response["order_number"] == ["Not a valid string."]
-        assert response["downloads"] == ["Not a valid string."]
         assert response["downloads"] == ["Not a valid list."]
 
         # #############################################################
