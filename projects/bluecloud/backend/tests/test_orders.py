@@ -147,10 +147,9 @@ class TestApp(BaseTests):
         assert r.status_code == 400
         response = self.get_content(r)
         assert isinstance(response, dict)
-        assert "request_id" not in response
-        assert "marine_id" not in response
-        assert "order_number" not in response
-        assert "downloads" in response
+        assert response["request_id"] == ["Not a valid string."]
+        assert response["order_number"] == ["Not a valid string."]
+        assert response["downloads"] == ["Not a valid string."]
         assert response["downloads"] == ["Not a valid list."]
 
         # #############################################################
