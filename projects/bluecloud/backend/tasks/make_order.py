@@ -14,8 +14,8 @@ import requests
 import urllib3
 from bluecloud.endpoints.schemas import DownloadType
 from celery.app.task import Task
-from plumbum import local
-from plumbum.commands.processes import ProcessExecutionError
+from plumbum import local  # type: ignore
+from plumbum.commands.processes import ProcessExecutionError  # type: ignore
 from restapi.config import DATA_PATH
 from restapi.connectors.celery import CeleryExt
 from restapi.env import Env
