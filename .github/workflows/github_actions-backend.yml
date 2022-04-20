@@ -23,11 +23,11 @@ jobs:
       - uses: rapydo/actions/install@v1
         with:
           project: ${PROJECT}
+          extra_options: "--e MARIS_EXTERNAL_API_SERVER=not-used -e MAX_ZIP_SIZE=262144 -e LOCK_SLEEP_TIME=1"
 
       - name: Run Pytest
         run: |
 
-          rapydo --testing -e MARIS_EXTERNAL_API_SERVER=not-used -e MAX_ZIP_SIZE=262144 -e LOCK_SLEEP_TIME=1 init --force
           rapydo pull --quiet
 
           rapydo add task test_task
