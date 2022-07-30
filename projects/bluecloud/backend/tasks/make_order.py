@@ -289,7 +289,7 @@ def make_zip_archives(
 
 @CeleryExt.task(idempotent=False)
 def make_order(
-    self: Task,
+    self: Task[[str, str, str, List[DownloadType], bool], ResponseType],
     request_id: str,
     marine_id: str,
     order_number: str,
