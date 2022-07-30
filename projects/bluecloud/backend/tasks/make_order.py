@@ -22,7 +22,7 @@ from restapi.env import Env
 from restapi.exceptions import NotFound
 from restapi.utilities.logs import log
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # type: ignore
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 NETWORK_RETRIES = 5
 NETWORK_SLEEP = 300
