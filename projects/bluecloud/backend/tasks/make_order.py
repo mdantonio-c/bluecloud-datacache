@@ -13,11 +13,10 @@ from urllib.parse import urlparse
 import requests
 import urllib3
 from bluecloud.endpoints.schemas import DownloadType
-from celery.app.task import Task
 from plumbum import local  # type: ignore
 from plumbum.commands.processes import ProcessExecutionError  # type: ignore
 from restapi.config import DATA_PATH
-from restapi.connectors.celery import CeleryExt
+from restapi.connectors.celery import CeleryExt, Task
 from restapi.env import Env
 from restapi.exceptions import NotFound
 from restapi.utilities.logs import log
