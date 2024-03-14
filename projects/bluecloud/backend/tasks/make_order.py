@@ -13,16 +13,15 @@ from urllib.parse import urlparse
 import requests
 import urllib3
 from bluecloud.endpoints.schemas import DownloadType
-from celery.app.task import Task
 from plumbum import local  # type: ignore
 from plumbum.commands.processes import ProcessExecutionError  # type: ignore
 from restapi.config import DATA_PATH
-from restapi.connectors.celery import CeleryExt
+from restapi.connectors.celery import CeleryExt, Task
 from restapi.env import Env
 from restapi.exceptions import NotFound
 from restapi.utilities.logs import log
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # type: ignore
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 NETWORK_RETRIES = 5
 NETWORK_SLEEP = 300
@@ -289,7 +288,7 @@ def make_zip_archives(
 
 @CeleryExt.task(idempotent=False)
 def make_order(
-    self: Task,
+    self: Task[[str, str, str, List[DownloadType], bool], ResponseType],
     request_id: str,
     marine_id: str,
     order_number: str,
