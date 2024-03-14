@@ -3,7 +3,7 @@ project:
   title: BlueCloud
   description: "REST APIs for BlueCloud Data Cache"
   version: "0.7"
-  rapydo: "2.3"
+  rapydo: "2.4"
 
 variables:
   env:
