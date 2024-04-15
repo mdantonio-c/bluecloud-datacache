@@ -7,7 +7,7 @@ import time
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple, TypedDict
+from typing import Dict, List, Optional, Tuple, TypedDict
 from urllib.parse import urlparse
 
 import requests
@@ -57,14 +57,19 @@ class ErrorCodes:
     UNEXPECTED_ERROR = ("999", "An unexpected error occurred")
 
 
-def http_download(url: str, out_path: Path) -> Optional[Tuple[str, str]]:
+def http_download(
+    url: str, custom_headers: Optional[Dict[str, str]], out_path: Path
+) -> Optional[Tuple[str, str]]:
 
     try:
+        # merge the download headers with the eventual custo headers
+        download_headers = {**DOWNLOAD_HEADERS, **custom_headers}
+
         r = requests.get(
             url,
             stream=True,
             verify=False,
-            headers=DOWNLOAD_HEADERS,
+            headers=download_headers,
             timeout=120,
         )
 
@@ -324,6 +329,7 @@ def make_order(
         download_url = d["url"]
         filename = d["filename"]
         order_line = d["order_line"]
+        custom_headers = d.get("custom_headers", {})
 
         log.debug("{} -> {}", download_url, filename)
 
@@ -335,7 +341,7 @@ def make_order(
                 if download_url.startswith("ftp://"):
                     error = ftp_download(download_url, local_path)  # pragma: no cover
                 else:
-                    error = http_download(download_url, local_path)
+                    error = http_download(download_url, custom_headers, local_path)
 
                 if (
                     error == ErrorCodes.DOWNLOAD_TIMEOUT

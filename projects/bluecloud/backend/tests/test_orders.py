@@ -181,6 +181,7 @@ class TestApp(BaseTests):
             "Missing data for required field."
         ]
 
+        fake_header = faker.pystr()
         data = {
             "request_id": faker.pystr(),
             "marine_id": faker.pystr(),
@@ -191,6 +192,7 @@ class TestApp(BaseTests):
                         "url": faker.pyint(),
                         "filename": faker.pyint(),
                         "order_line": faker.pyint(),
+                        "custom_headers": {fake_header: faker.pystr()},
                     }
                 ]
             ),
@@ -207,9 +209,13 @@ class TestApp(BaseTests):
         assert "url" in response["downloads"]["0"]
         assert "filename" in response["downloads"]["0"]
         assert "order_line" in response["downloads"]["0"]
+        assert "custom_headers" in response["downloads"]["0"]
         assert response["downloads"]["0"]["url"] == ["Not a valid string."]
         assert response["downloads"]["0"]["filename"] == ["Not a valid string."]
         assert response["downloads"]["0"]["order_line"] == ["Not a valid string."]
+        assert response["downloads"]["0"]["custom_headers"] == {
+            fake_header: ["Unknown field."]
+        }
 
         # #############################################################
         # URLs validator is no longer enabled, now all strings are accepted
@@ -279,6 +285,7 @@ class TestApp(BaseTests):
                         "url": download_url1,
                         "filename": filename_1,
                         "order_line": order_line1,
+                        "custom_headers": headers,
                     },
                     {
                         "url": download_url2,
@@ -450,6 +457,7 @@ class TestApp(BaseTests):
                         "url": download_url3,
                         "filename": filename_3,
                         "order_line": order_line3,
+                        "custom_headers": {"Cookie": "cookieLawSeen=true"},
                     },
                 ]
             ),

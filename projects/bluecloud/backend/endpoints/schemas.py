@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Dict, Optional, TypedDict
 
 from restapi.config import TESTING
 from restapi.models import Schema, fields
@@ -8,6 +8,12 @@ class DownloadType(TypedDict):
     url: str
     filename: str
     order_line: str
+    custom_headers: Optional[Dict[str, str]]
+
+
+class DownloadHeaders(Schema):
+    Authorization = fields.Str(required=False)
+    Cookie = fields.Str(required=False)
 
 
 class Download(Schema):
@@ -19,6 +25,7 @@ class Download(Schema):
     filename = fields.Str(required=True)
     # unique number for identification
     order_line = fields.Str(required=True)
+    custom_headers = fields.Nested(DownloadHeaders, required=False)
 
 
 class OrderInputSchema(Schema):
